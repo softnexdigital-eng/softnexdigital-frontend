@@ -19,18 +19,10 @@ export default function FinalCTA() {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}`}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/auth/login"
             className="inline-flex items-center gap-2 bg-white text-red-600 px-6 py-3.5 rounded-xl text-sm font-bold hover:bg-zinc-100 transition-all shadow-lg w-full sm:w-auto justify-center"
           >
             🚀 Start Now
-          </a>
-          <a
-            href={`tel:+${WHATSAPP_NUMBER}`}
-            className="inline-flex items-center gap-2 border-2 border-white text-white px-6 py-3.5 rounded-xl text-sm font-bold hover:bg-white hover:text-red-600 transition-all w-full sm:w-auto justify-center"
-          >
-            <FiPhone size={15} /> Book Demo
           </a>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-4 mt-6 text-white/80 text-xs">

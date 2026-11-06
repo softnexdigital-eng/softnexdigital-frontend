@@ -39,7 +39,7 @@ export default function Footer() {
             Ready To Scale Your Store?
           </h3>
           <Link
-            href="/demo"
+            href="/auth/login"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-600/30 shrink-0"
           >
             Start Selling
