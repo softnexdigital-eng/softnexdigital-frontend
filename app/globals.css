@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F8FAFC;
+  --foreground: #111827;
+
+  /* Brand palette: Indigo (change these 12 values to re-theme the whole app) */
+  --brand-50: #EEF2FF;
+  --brand-100: #E0E7FF;
+  --brand-200: #C7D2FE;
+  --brand-300: #A5B4FC;
+  --brand-400: #818CF8;
+  --brand-500: #6366F1;
+  --brand-600: #4F46E5; /* main */
+  --brand-700: #4338CA; /* hover */
+  --brand-800: #3730A3; /* dark / gradient end */
+  --brand-900: #312E81;
+  --brand-950: #1E1B4B;
+
+  /* Amber accent (offers, highlights) */
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #F59E0B;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+
+  /* Text */
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+
+  /* Border */
+  --border-color: #E5E7EB;
+  --border-light: #D1D5DB;
+
+  /* Status */
+  --success: #10B981;
+  --error: #EF4444;
+  --stars: #FBBF24;
+
+  /* Header */
+  --header-bg: #FFFFFF;
+  --header-border: #E5E7EB;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --breakpoint-xs: 475px;
+
+  /* New utilities: bg-brand-600, text-brand-700, border-brand-200 ... */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+
+  /* Existing blue-* classes automatically follow the brand palette,
+     so the old !important overrides are no longer needed. */
+  --color-blue-50: var(--brand-50);
+  --color-blue-100: var(--brand-100);
+  --color-blue-200: var(--brand-200);
+  --color-blue-300: var(--brand-300);
+  --color-blue-400: var(--brand-400);
+  --color-blue-500: var(--brand-500);
+  --color-blue-600: var(--brand-600);
+  --color-blue-700: var(--brand-700);
+  --color-blue-800: var(--brand-800);
+  --color-blue-900: var(--brand-900);
+  --color-blue-950: var(--brand-950);
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom xs breakpoint (475px) for responsive design */
+@media (min-width: 475px) {
+  .\32xl\:hidden { display: inherit; }
+}
+
+/* Gradients that used blue -> cyan / indigo now use the brand colors */
+.bg-gradient-to-br.from-blue-500.to-cyan-500 {
+  background-image: linear-gradient(to bottom right, var(--brand-600), var(--brand-800)) !important;
+}
+.to-cyan-500 {
+  --tw-gradient-to: var(--brand-800) !important;
+}
+.bg-gradient-to-br.from-blue-100.to-indigo-100 {
+  background-image: linear-gradient(to bottom right, var(--brand-100), var(--brand-50)) !important;
+}
+
+/* Form controls */
+input:focus, select:focus, textarea:focus {
+  --tw-ring-color: var(--brand-600) !important;
+  border-color: var(--brand-600) !important;
+  outline: none;
+}
+[type="checkbox"]:checked, [type="radio"]:checked {
+  accent-color: var(--brand-600) !important;
+}
+[type="checkbox"]:focus, [type="radio"]:focus {
+  --tw-ring-color: var(--brand-600) !important;
+}
