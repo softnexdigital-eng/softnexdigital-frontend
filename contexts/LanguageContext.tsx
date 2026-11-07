@@ -22,6 +22,8 @@ const translations: Record<string, Record<Lang, string>> = {
   'sidebar.users': { bn: 'ইউজার', en: 'Users' },
   'sidebar.payments': { bn: 'পেমেন্ট', en: 'Payments' },
   'sidebar.notifications': { bn: 'নোটিফিকেশন', en: 'Notifications' },
+  'sidebar.page-visits': { bn: 'পেজ ভিজিট', en: 'Page Visits' },
+  'sidebar.super_admin': { bn: 'সুপার অ্যাডমিন', en: 'Super Admin' },
   'sidebar.settings': { bn: 'সেটিংস', en: 'Settings' },
   'sidebar.more': { bn: 'আরও মেনু', en: 'More Menu' },
   'sidebar.logout': { bn: 'লগআউট', en: 'Logout' },
@@ -322,8 +324,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>('bn');
 
   useEffect(() => {
-    const saved = localStorage.getItem('dashboardLang');
-    if (saved === 'en' || saved === 'bn') setLang(saved);
+    const timeoutId = window.setTimeout(() => {
+      const saved = localStorage.getItem('dashboardLang');
+      if (saved === 'en' || saved === 'bn') setLang(saved);
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const toggleLang = () => {

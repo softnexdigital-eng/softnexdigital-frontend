@@ -42,6 +42,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSuperAdminNotifications } from '@/contexts/SuperAdminNotificationsContext';
 
 // ─── Type Definitions ───────────────────────────────────────────────────────
 interface MenuItem {
@@ -107,6 +108,11 @@ const configMenuItems: MenuItem[] = [
   { key: 'settings', href: '/dashboard/settings', icon: FiSettings },
 ];
 
+const superAdminMenuItems: MenuItem[] = [
+  { key: 'page-visits', href: '/dashboard/page-visits', icon: FiBarChart2 },
+  { key: 'notifications', href: '/dashboard/notifications', icon: FiBell },
+];
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const isMenuItemActive = (pathname: string, href: string): boolean => {
   if (href === '/dashboard') return pathname === href;
@@ -145,6 +151,7 @@ const sections: SectionDef[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { unreadCount } = useSuperAdminNotifications();
   const router = useRouter();
   const { theme } = useTheme();
   const { t, toggleLang } = useLanguage();
@@ -225,6 +232,23 @@ export default function Sidebar() {
   const userName = user?.email?.split('@')[0] || 'User';
   const userInitials = getInitials(userName);
   const userRole = user?.role || 'Admin';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const sidebarSections = isSuperAdmin
+    ? [
+        ...sections.slice(0, -1),
+        {
+          ...sections[sections.length - 1],
+          items: configMenuItems.filter(item => item.key !== 'notifications'),
+        },
+        {
+          title: 'SUPER_ADMIN',
+          items: superAdminMenuItems.map(item => ({
+            ...item,
+            badge: item.href === '/dashboard/notifications' ? unreadCount : undefined,
+          })),
+        },
+      ]
+    : sections;
 
   // ── Render a single menu link ───────────────────────────────────────────────
   const renderMenuItem = (item: MenuItem, isNested = false) => {
@@ -261,7 +285,7 @@ export default function Sidebar() {
 
         {/* Icon with scale effect */}
         <div className={`transition-transform duration-150 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
-          <Icon className="w-[18px] md:w-[20px] h-[18px] md:h-[20px] flex-shrink-0" strokeWidth={active ? 2.2 : 1.8} />
+          <Icon className={`w-[18px] md:w-[20px] h-[18px] md:h-[20px] flex-shrink-0 ${item.key === 'notifications' && isSuperAdmin && unreadCount > 0 ? 'motion-safe:animate-pulse' : ''}`} strokeWidth={active ? 2.2 : 1.8} />
         </div>
 
         {/* Label */}
@@ -270,10 +294,13 @@ export default function Sidebar() {
         )}
 
         {/* Badge */}
-        {item.badge && !collapsed && (
-          <span className="ml-auto text-[11px] font-semibold bg-red-500/20 text-red-400 px-2 py-0.5 min-w-[22px] text-center">
+        {item.badge !== undefined && item.badge > 0 && !collapsed && (
+          <span className={`ml-auto text-[11px] font-semibold bg-red-500/20 text-red-400 px-2 py-0.5 min-w-[22px] text-center ${item.key === 'notifications' ? 'motion-safe:animate-pulse' : ''}`}>
             {item.badge}
           </span>
+        )}
+        {item.key === 'notifications' && isSuperAdmin && unreadCount > 0 && (
+          <span className="sr-only">Unread notifications: {unreadCount}</span>
         )}
       </Link>
     );
@@ -433,7 +460,7 @@ export default function Sidebar() {
 
         {/* ── Navigation (larger text, borders, animations) ── */}
         <nav className="flex-1 overflow-y-auto py-2 px-1.5 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent space-y-0">
-          {sections.map((section, index) => (
+          {sidebarSections.map((section, index) => (
             <div key={`section-${section.title}`}>
               {renderSection(section, index)}
             </div>
