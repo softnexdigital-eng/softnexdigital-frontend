@@ -42,7 +42,7 @@ interface OrderFormProps {
   allVariants: any[];
 }
 
-type OrderFormData = { customerName: string; customerPhone: string; customerAddress: string; customerEmail: string; notes: string; };
+type OrderFormData = { customerName: string; customerPhone: string; customerAddress: string; customerEmail: string; notes: string; paymentMethod?: string; };
 
 export default function OrderForm({
   isCartOrder, cartData, selectedCartItems, setSelectedCartItems, selectedVariantAttrs, selectedVariant, quantity, setQuantity,
@@ -244,6 +244,23 @@ export default function OrderForm({
             </div>
             {appliedDiscount > 0 && <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-sm"><p className="text-xs text-red-700 font-bold">✓ ছাড় প্রয়োগ করা হয়েছে: ৳{appliedDiscount.toFixed(0)}</p></div>}
           </div> */}
+          <div>
+            <label className="block text-xs font-black mb-1.5 text-gray-700">পেমেন্ট মেথড *</label>
+            <label className="flex items-center gap-3 p-3 border-2 rounded-sm cursor-pointer" style={{ borderColor: `${primary}40`, background: `${primary}08` }}>
+              <input
+                type="radio"
+                value="CASH_ON_DELIVERY"
+                {...register("paymentMethod")}
+                defaultChecked
+                className="w-4 h-4"
+                style={{ accentColor: primary }}
+              />
+              <div>
+                <div className="text-sm font-bold text-gray-800">ক্যাশ অন ডেলিভারি</div>
+                <div className="text-[11px] text-gray-500">পণ্য হাতে পেয়ে টাকা দিন</div>
+              </div>
+            </label>
+          </div>
           <div>
             <label className="block text-xs font-black mb-1.5 text-gray-700">বিশেষ নির্দেশনা <span className="text-gray-400 font-normal">(ঐচ্ছিক)</span></label>
             <textarea {...register("notes")} rows={2} className="w-full px-3.5 py-2.5 text-sm resize-none border-2 border-gray-200 bg-gray-50 transition-all rounded-sm" onFocus={e => e.target.style.borderColor = primary} onBlur={e => e.target.style.borderColor = "#e5e7eb"} placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন" />

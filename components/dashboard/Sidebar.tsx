@@ -106,6 +106,7 @@ const configMenuItems: MenuItem[] = [
   { key: 'users', href: '/dashboard/users', icon: FiUsers },
   { key: 'notifications', href: '/dashboard/notifications', icon: FiBell },
   { key: 'settings', href: '/dashboard/settings', icon: FiSettings },
+  { key: 'marketing', href: '/dashboard/marketing', icon: FiBarChart2 },
 ];
 
 const superAdminMenuItems: MenuItem[] = [
@@ -238,7 +239,7 @@ export default function Sidebar() {
         ...sections.slice(0, -1),
         {
           ...sections[sections.length - 1],
-          items: configMenuItems.filter(item => item.key !== 'notifications'),
+          items: configMenuItems.filter(item => item.key !== 'notifications' && item.key !== 'marketing'),
         },
         {
           title: 'SUPER_ADMIN',

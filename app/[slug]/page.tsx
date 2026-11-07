@@ -54,6 +54,16 @@ import { Product, Variant, Tenant, LandingPage, Review } from "@/types";
 import LoadingButton from "@/components/loading/LoadingButton";
 import { Skeleton, SkeletonText, SkeletonCard } from "@/components/loading";
 import { ThemeConfig, themeConfigs } from "./themeConfig";
+import {
+  buildMetaServerEventPayload,
+  createMetaEventId,
+  initializeMetaPixel,
+  readMetaCookies,
+  shouldInitializeMetaPixel,
+  shouldSendMetaServerEvent,
+  trackMetaPixelEvent,
+} from "@/lib/metaTracking";
+import type { MetaEventItem, MetaPixelConfig } from "@/lib/metaTracking";
 
 interface PublicPageData {
   page: LandingPage;
@@ -71,6 +81,7 @@ type OrderFormData = {
   customerEmail: string;
   notes: string;
   couponCode?: string;
+  paymentMethod?: string;
 };
 
 function useInView(threshold = 0.12) {
@@ -299,7 +310,16 @@ function BannerSlider({
 
 export default function PublicLandingPage() {
   const params = useParams();
+  const storeSlug = typeof params.slug === "string" ? params.slug : "";
   const [data, setData] = useState<PublicPageData | null>(null);
+  const [metaConfigState, setMetaConfigState] = useState<{
+    slug: string;
+    config: MetaPixelConfig | null;
+  } | null>(null);
+  const [marketingConsentState, setMarketingConsentState] = useState<{
+    slug: string;
+    consent: boolean | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
@@ -311,9 +331,8 @@ export default function PublicLandingPage() {
   const [cartCount, setCartCount] = useState(0);
 
   const [quantity, setQuantity] = useState(1);
-  const QUANTITY_STEP = 0.5;
-  const roundToStep = (val: number) =>
-    Math.round(val / QUANTITY_STEP) * QUANTITY_STEP;
+  const QUANTITY_STEP = 1;
+  const roundToStep = (val: number) => Math.round(val);
   const [orderSuccess, setOrderSuccess] = useState<{
     orderNumber: string;
   } | null>(null);
@@ -402,6 +421,149 @@ export default function PublicLandingPage() {
   const [cartOrderProcessing, setCartOrderProcessing] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const addToCartInFlightRef = useRef(new Set<string>());
+  const orderSubmissionInFlightRef = useRef(false);
+  const cartOrderSubmissionInFlightRef = useRef(false);
+  const checkoutInitiatedRef = useRef(false);
+  const viewedProductIdRef = useRef<string | null>(null);
+
+  const metaConfig =
+    metaConfigState?.slug === storeSlug ? metaConfigState.config : null;
+  const marketingConsent =
+    marketingConsentState?.slug === storeSlug
+      ? marketingConsentState.consent
+      : null;
+
+  useEffect(() => {
+    if (!storeSlug) return;
+    addToCartInFlightRef.current.clear();
+    orderSubmissionInFlightRef.current = false;
+    cartOrderSubmissionInFlightRef.current = false;
+    checkoutInitiatedRef.current = false;
+    viewedProductIdRef.current = null;
+    let consent: boolean | null = null;
+    try {
+      const saved = localStorage.getItem(`marketing-consent:${storeSlug}`);
+      if (saved === "granted") consent = true;
+      else if (saved === "denied") consent = false;
+    } catch {
+      // Consent remains unset when browser storage is unavailable.
+    }
+    const timer = window.setTimeout(
+      () => setMarketingConsentState({ slug: storeSlug, consent }),
+      0,
+    );
+    return () => window.clearTimeout(timer);
+  }, [storeSlug]);
+
+  useEffect(() => {
+    if (
+      marketingConsent !== true ||
+      !shouldInitializeMetaPixel(metaConfig, true) ||
+      !metaConfig.pixelId
+    ) {
+      return;
+    }
+    initializeMetaPixel(metaConfig.pixelId);
+  }, [marketingConsent, metaConfig]);
+
+  const trackMetaEvent = useCallback(
+    (
+      eventName: "ViewContent" | "AddToCart" | "InitiateCheckout",
+      items: MetaEventItem[],
+    ) => {
+      if (
+        marketingConsent !== true ||
+        !shouldInitializeMetaPixel(metaConfig, true) ||
+        !metaConfig.pixelId ||
+        items.length === 0
+      ) {
+        return;
+      }
+
+      const eventId = createMetaEventId();
+      initializeMetaPixel(metaConfig.pixelId);
+      const contentItems = items.map(({ productId, quantity }) => ({
+        id: productId,
+        quantity,
+      }));
+      trackMetaPixelEvent(
+        metaConfig.pixelId,
+        eventName,
+        {
+          content_ids: [...new Set(items.map((item) => item.productId))],
+          content_type: "product",
+          contents: contentItems,
+        },
+        eventId,
+      );
+
+      if (shouldSendMetaServerEvent(metaConfig, true)) {
+        const payload = buildMetaServerEventPayload({
+          tenantSlug: storeSlug,
+          eventName,
+          eventId,
+          eventSourceUrl: window.location.href,
+          items,
+          cookies: readMetaCookies(document.cookie),
+        });
+        void api
+          .post("/marketing/meta/events", payload)
+          .catch(() => console.warn("Meta server event failed; storefront flow continues."));
+      }
+      return eventId;
+    },
+    [marketingConsent, metaConfig, storeSlug],
+  );
+
+  const trackPurchase = useCallback(
+    (orderId: string) => {
+      if (
+        marketingConsent !== true ||
+        !shouldInitializeMetaPixel(metaConfig, true) ||
+        !metaConfig.pixelId
+      ) {
+        return;
+      }
+      initializeMetaPixel(metaConfig.pixelId);
+      trackMetaPixelEvent(metaConfig.pixelId, "Purchase", {}, orderId);
+    },
+    [marketingConsent, metaConfig],
+  );
+
+  const initiateCheckout = useCallback(
+    (items: MetaEventItem[]) => {
+      if (checkoutInitiatedRef.current) return;
+      const validItems = items.filter(
+        (item) => item.productId && Number.isFinite(item.quantity) && item.quantity > 0,
+      );
+      if (validItems.length === 0) return;
+      checkoutInitiatedRef.current = true;
+      trackMetaEvent("InitiateCheckout", validItems);
+    },
+    [trackMetaEvent],
+  );
+
+  const getOrderMarketingFields = () => {
+    if (marketingConsent !== true) return { marketingConsent: false };
+    return {
+      marketingConsent: true,
+      eventSourceUrl: window.location.href,
+      ...readMetaCookies(document.cookie),
+    };
+  };
+
+  const saveMarketingConsent = (consent: boolean) => {
+    try {
+      localStorage.setItem(
+        `marketing-consent:${storeSlug}`,
+        consent ? "granted" : "denied",
+      );
+    } catch {
+      // Keep the choice for this page session when browser storage is unavailable.
+    }
+    setMarketingConsentState({ slug: storeSlug, consent });
+  };
 
   // Auto-save incomplete checkout data
   const saveIncompleteFormData = useCallback(async (formData: Partial<OrderFormData>) => {
@@ -518,7 +680,9 @@ export default function PublicLandingPage() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<OrderFormData>();
+  } = useForm<OrderFormData>({
+    defaultValues: { paymentMethod: "CASH_ON_DELIVERY" },
+  });
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -710,6 +874,8 @@ export default function PublicLandingPage() {
       showToast.error("Session not ready");
       return;
     }
+    if (addToCartInFlightRef.current.has(variantId)) return;
+    addToCartInFlightRef.current.add(variantId);
     setCartLoadingItems((prev) => new Set(prev).add(variantId));
     try {
       const res = await api.post("/public/cart/add", {
@@ -721,11 +887,16 @@ export default function PublicLandingPage() {
       });
       if (res.data.success) {
         showToast.success("কার্টে যোগ করা হয়েছে!");
+        const productId =
+          variantProductMap[variantId]?.id ||
+          variants.find((variant) => variant.id === variantId)?.productId;
+        if (productId) trackMetaEvent("AddToCart", [{ productId, quantity: qty }]);
         fetchCartData();
       }
     } catch (err: any) {
       showToast.error(err?.response?.data?.message || "কার্টে যোগ করতে ব্যর্থ");
     } finally {
+      addToCartInFlightRef.current.delete(variantId);
       setCartLoadingItems((prev) => {
         const n = new Set(prev);
         n.delete(variantId);
@@ -849,9 +1020,27 @@ export default function PublicLandingPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await api.get(`/public/landing-page/${params.slug}`);
+      const response = await api.get(`/public/landing-page/${storeSlug}`);
       if (response.data.success) {
         setData(response.data.data);
+        void api
+          .get(`/marketing/meta/config/${encodeURIComponent(storeSlug)}`)
+          .then((configResponse) => {
+            const configData = configResponse.data?.data;
+            if (configResponse.data?.success && configData) {
+              setMetaConfigState({
+                slug: storeSlug,
+                config: {
+                  enabled: Boolean(configData.enabled),
+                  pixelId: typeof configData.pixelId === "string" ? configData.pixelId : null,
+                  serverTrackingEnabled: Boolean(configData.serverTrackingEnabled),
+                },
+              });
+            }
+          })
+          .catch(() => {
+            setMetaConfigState({ slug: storeSlug, config: null });
+          });
 
         const allProducts = response.data.data.products || [];
         const allVariants: Variant[] = [];
@@ -889,12 +1078,12 @@ export default function PublicLandingPage() {
     } finally {
       setLoading(false);
     }
-  }, [params.slug]);
+  }, [storeSlug]);
 
   useEffect(() => {
     fetchData();
-    api.post(`/public/page-view/${params.slug}`).catch(() => {});
-  }, [fetchData, params.slug]);
+    api.post(`/public/page-view/${storeSlug}`).catch(() => {});
+  }, [fetchData, storeSlug]);
 
   const fetchReviews = useCallback(async () => {
     if (!data?.tenant?.id) return;
@@ -1018,6 +1207,8 @@ export default function PublicLandingPage() {
       showToast.error(selectedVariant ? "এই ভ্যারিয়েন্টটি স্টকে নেই" : "সাইজ ও কালার সিলেক্ট করুন");
       return;
     }
+    if (orderSubmissionInFlightRef.current) return;
+    orderSubmissionInFlightRef.current = true;
     setOrderLoading(true);
     try {
       const response = await api.post("/public/orders", {
@@ -1032,8 +1223,12 @@ export default function PublicLandingPage() {
         notes: formData.notes || undefined,
         couponCode: couponCode.toUpperCase() || undefined,
         discountAmount: appliedDiscount,
+        paymentMethod: formData.paymentMethod || "CASH_ON_DELIVERY",
+        ...getOrderMarketingFields(),
       });
       if (response.data.success) {
+        const orderId = response.data.data?.orderId;
+        if (typeof orderId === "string" && orderId) trackPurchase(orderId);
         setOrderSuccess({
           orderNumber: response.data.data?.orderNumber || "N/A",
         });
@@ -1081,6 +1276,7 @@ export default function PublicLandingPage() {
           duration: 4000,
         });
     } finally {
+      orderSubmissionInFlightRef.current = false;
       setOrderLoading(false);
     }
   };
@@ -1155,6 +1351,8 @@ export default function PublicLandingPage() {
       showToast.error("অনুগ্রহ করে অন্তত একটি পণ্য নির্বাচন করুন");
       return;
     }
+    if (cartOrderSubmissionInFlightRef.current) return;
+    cartOrderSubmissionInFlightRef.current = true;
     setCartOrderProcessing(true);
     try {
       const itemsToRemove = cartData.items.filter(
@@ -1181,8 +1379,12 @@ export default function PublicLandingPage() {
         notes: formData.notes || undefined,
         couponCode: couponCode.toUpperCase() || undefined,
         discountAmount: appliedDiscount,
+        paymentMethod: formData.paymentMethod || "CASH_ON_DELIVERY",
+        ...getOrderMarketingFields(),
       });
       if (response.data.success) {
+        const orderId = response.data.data?.orderId;
+        if (typeof orderId === "string" && orderId) trackPurchase(orderId);
         setOrderSuccess({
           orderNumber: response.data.data?.orderNumber || "N/A",
         });
@@ -1198,6 +1400,7 @@ export default function PublicLandingPage() {
     } catch (err: any) {
       showToast.error(err?.response?.data?.message || "কার্ট অর্ডার করতে ব্যর্থ");
     } finally {
+      cartOrderSubmissionInFlightRef.current = false;
       setCartOrderProcessing(false);
     }
   };
@@ -1333,11 +1536,16 @@ export default function PublicLandingPage() {
       setSelectedVariant(variant);
       setQuantity(1);
       const product = getProductForVariant(variant.id);
+      const productId = product?.id || variant.productId;
+      if (productId && viewedProductIdRef.current !== productId) {
+        viewedProductIdRef.current = productId;
+        trackMetaEvent("ViewContent", [{ productId, quantity: 1 }]);
+      }
       setSelectedProduct(product || data?.product || null);
       setViewMode("detail");
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [getProductForVariant, data?.product],
+    [getProductForVariant, data?.product, trackMetaEvent],
   );
 
   const syncHeroVariant = useCallback(
@@ -1355,6 +1563,8 @@ export default function PublicLandingPage() {
   // হোমে ফেরার ফাংশন
   const goToHome = () => {
     setViewMode("home");
+    viewedProductIdRef.current = null;
+    checkoutInitiatedRef.current = false;
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -1429,6 +1639,8 @@ export default function PublicLandingPage() {
                 setSelectedVariant(variants[0] || null);
                 setQuantity(1);
                 setViewMode("home");
+                viewedProductIdRef.current = null;
+                checkoutInitiatedRef.current = false;
               }}
               className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 text-sm rounded-sm"
             >
@@ -1747,6 +1959,9 @@ export default function PublicLandingPage() {
                 cartLoadingItems={cartLoadingItems}
                 isOutOfStock={isOutOfStock}
                 addToCart={addToCart}
+                onInitiateCheckout={(productId, checkoutQuantity) =>
+                  initiateCheckout([{ productId, quantity: checkoutQuantity }])
+                }
                 updateVariantAndProduct={updateVariantAndProduct}
                 toggleWishlist={toggleWishlist}
                 sortBy={sortBy}
@@ -1834,6 +2049,9 @@ export default function PublicLandingPage() {
                   badge={badge}
                   tagline={tagline}
                   addToCart={addToCart}
+                  onInitiateCheckout={(productId, checkoutQuantity) =>
+                    initiateCheckout([{ productId, quantity: checkoutQuantity }])
+                  }
                   updateVariantAndProduct={updateVariantAndProduct}
                   switchVariant={switchVariant}
                   toggleWishlist={toggleWishlist}
@@ -2224,6 +2442,7 @@ export default function PublicLandingPage() {
         setSelectedCartItems={setSelectedCartItems}
         scrollToOrder={scrollToOrder}
         setViewMode={setViewMode}
+        onInitiateCheckout={initiateCheckout}
         primary={PRIMARY}
       />
 
@@ -2261,6 +2480,11 @@ export default function PublicLandingPage() {
           </a>
           <a
             href={selectedVariant && selectedVariant.stock > 0 ? orderNowLink : undefined}
+            onClick={() => {
+              if (selectedVariant && selectedVariant.stock > 0 && selectedProduct?.id) {
+                initiateCheckout([{ productId: selectedProduct.id, quantity }]);
+              }
+            }}
             aria-disabled={!selectedVariant || selectedVariant.stock <= 0}
             className="flex items-center justify-center gap-1.5 text-white font-black py-3.5 px-4 text-xs"
             style={{ background: PRIMARY, borderRadius: "10px" }}
@@ -2348,6 +2572,34 @@ export default function PublicLandingPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {marketingConsent === null && (
+        <aside
+          aria-label="Marketing cookie consent"
+          className="fixed inset-x-0 bottom-0 z-[70] border-t border-gray-200 bg-white p-4 shadow-2xl md:bottom-4 md:left-4 md:right-auto md:max-w-lg md:rounded-xl md:border"
+        >
+          <p className="text-sm font-bold text-gray-900">আপনার মার্কেটিং কুকির পছন্দ</p>
+          <p className="mt-1 text-xs leading-5 text-gray-600">
+            আপনার সম্মতি থাকলে এই দোকান Meta Pixel ও Conversions API ব্যবহার করে মার্কেটিং ইভেন্ট মাপবে। সম্মতি না দিলে কোনো Meta tracking চালু হবে না।
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => saveMarketingConsent(false)}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              প্রত্যাখ্যান
+            </button>
+            <button
+              type="button"
+              onClick={() => saveMarketingConsent(true)}
+              className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-700"
+            >
+              সম্মতি দিন
+            </button>
+          </div>
+        </aside>
       )}
     </div>
   );

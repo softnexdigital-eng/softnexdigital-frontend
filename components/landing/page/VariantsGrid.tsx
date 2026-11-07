@@ -81,6 +81,7 @@ interface VariantsGridProps {
   cartLoadingItems: Set<string>;
   isOutOfStock: (v: Variant) => boolean;
   addToCart: (id: string, qty?: number) => void;
+  onInitiateCheckout?: (productId: string, quantity: number) => void;
   updateVariantAndProduct: (v: Variant) => void;
   toggleWishlist: (id: string) => void;
   sortBy: string;
@@ -108,6 +109,7 @@ export default function VariantsGrid({
   cartLoadingItems,
   isOutOfStock,
   addToCart,
+  onInitiateCheckout,
   updateVariantAndProduct,
   toggleWishlist,
   sortBy,
@@ -510,7 +512,7 @@ export default function VariantsGrid({
         {/* CTA buttons */}
         <div className="flex gap-2 p-3 pt-0">
           <button
-            onClick={(e) => { e.stopPropagation(); if (!outOfStock) { updateVariantAndProduct(variant); scrollToHero?.(); } }}
+            onClick={(e) => { e.stopPropagation(); if (!outOfStock) { onInitiateCheckout?.(variant.productId, 1); updateVariantAndProduct(variant); scrollToHero?.(); } }}
             disabled={outOfStock}
             className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-black text-white rounded-md disabled:opacity-40 active:scale-95 transition-all"
             style={{ background: outOfStock ? "#9ca3af" : `linear-gradient(135deg, ${primary}, ${primaryDark})` }}
@@ -883,7 +885,7 @@ export default function VariantsGrid({
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 disabled:opacity-40">
                       <FaShoppingBag className="text-[10px]" />{isLoading ? "..." : "কার্টে যোগ"}
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); if (!outOfStock) { updateVariantAndProduct(singleVariant); scrollToHero?.(); } }}
+                    <button onClick={(e) => { e.stopPropagation(); if (!outOfStock) { onInitiateCheckout?.(singleVariant.productId, 1); updateVariantAndProduct(singleVariant); scrollToHero?.(); } }}
                       disabled={outOfStock}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-black text-white rounded-lg disabled:opacity-40"
                       style={{ background: outOfStock ? "#9ca3af" : `linear-gradient(135deg, ${primary}, ${primaryDark})` }}>

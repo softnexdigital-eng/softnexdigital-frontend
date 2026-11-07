@@ -3,10 +3,23 @@
 import { FaShoppingCart, FaTimes as FaTimesIcon, FaMinus, FaPlus, FaTrash, FaLeaf } from "react-icons/fa";
 import { formatAttributes } from "@/lib/attrUtils";
 
+interface CartDrawerItem {
+  id?: string;
+  quantity: number;
+  variant: {
+    id: string;
+    productId?: string;
+    image?: string;
+    price?: number;
+    attributes?: Record<string, unknown>;
+    product?: { id?: string; name?: string };
+  };
+}
+
 interface CartDrawerProps {
   open: boolean;
   onClose: () => void;
-  cartData: any;
+  cartData: { items?: CartDrawerItem[] } | null;
   cartCount: number;
   updateCartQty: (variantId: string, qty: number) => void;
   removeFromCart: (variantId: string) => void;
@@ -14,10 +27,11 @@ interface CartDrawerProps {
   setSelectedCartItems: (s: Set<string>) => void;
   scrollToOrder: () => void;
   setViewMode: (mode: "home" | "detail") => void;
+  onInitiateCheckout: (items: { productId: string; quantity: number }[]) => void;
   primary: string;
 }
 
-export default function CartDrawer({ open, onClose, cartData, cartCount, updateCartQty, removeFromCart, setIsCartOrder, setSelectedCartItems, scrollToOrder, setViewMode, primary }: CartDrawerProps) {
+export default function CartDrawer({ open, onClose, cartData, cartCount, updateCartQty, removeFromCart, setIsCartOrder, setSelectedCartItems, scrollToOrder, setViewMode, onInitiateCheckout, primary }: CartDrawerProps) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50">
@@ -32,11 +46,11 @@ export default function CartDrawer({ open, onClose, cartData, cartCount, updateC
             <div className="text-center py-12 text-gray-400">
               <FaShoppingCart className="text-5xl mx-auto mb-3" style={{ color: `${primary}30` }} />
               <p className="font-bold">আপনার কার্ট খালি</p>
-              <p className="text-xs mt-1">পণ্য যোগ করতে "কার্টে যোগ করুন" বাটনে ক্লিক করুন</p>
+              <p className="text-xs mt-1">পণ্য যোগ করতে &quot;কার্টে যোগ করুন&quot; বাটনে ক্লিক করুন</p>
             </div>
           ) : (
             <div className="space-y-2">
-              {cartData.items.map((cartItem: any, i: number) => {
+              {cartData.items.map((cartItem, i) => {
                 const v = cartItem.variant;
                 const attrLabel = v?.attributes ? formatAttributes(v.attributes, ", ") : "";
                 const lineTotal = (v?.price || 0) * cartItem.quantity;
@@ -65,9 +79,22 @@ export default function CartDrawer({ open, onClose, cartData, cartCount, updateC
           <div className="sticky bottom-0 bg-white p-4 space-y-2" style={{ borderTop: `1px solid ${primary}20` }}>
             <div className="flex justify-between font-bold text-sm">
               <span>সর্বমোট:</span>
-              <span style={{ color: primary }}>৳{cartData.items.reduce((sum: number, ci: any) => sum + (ci.variant?.price || 0) * ci.quantity, 0)}</span>
+              <span style={{ color: primary }}>৳{cartData.items.reduce((sum, ci) => sum + (ci.variant.price || 0) * ci.quantity, 0)}</span>
             </div>
-            <button onClick={() => { onClose(); setIsCartOrder(true); const allIds = new Set<string>(cartData.items.map((item: any) => item.variant?.id).filter(Boolean)); setSelectedCartItems(allIds); setViewMode("detail"); setTimeout(scrollToOrder, 200); }} className="w-full text-white font-bold py-3 rounded-sm transition-all hover:opacity-90" style={{ background: primary }}>
+            <button onClick={() => {
+              const cartItems = cartData.items || [];
+              const items = cartItems.flatMap((item) => {
+                const productId = item.variant.product?.id || item.variant.productId;
+                return productId ? [{ productId, quantity: item.quantity }] : [];
+              });
+              onInitiateCheckout(items);
+              onClose();
+              setIsCartOrder(true);
+              const allIds = new Set<string>(cartItems.map((item) => item.variant.id));
+              setSelectedCartItems(allIds);
+              setViewMode("detail");
+              setTimeout(scrollToOrder, 200);
+            }} className="w-full text-white font-bold py-3 rounded-sm transition-all hover:opacity-90" style={{ background: primary }}>
               অর্ডার সম্পন্ন করুন
             </button>
           </div>

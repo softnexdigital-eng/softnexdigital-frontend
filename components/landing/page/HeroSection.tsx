@@ -44,6 +44,7 @@ interface HeroSectionProps {
   badge: string;
   tagline: string;
   addToCart: (id: string, qty?: number, attrs?: Record<string, string>) => void;
+  onInitiateCheckout?: (productId: string, quantity: number) => void;
   updateVariantAndProduct: (v: any) => void;
   switchVariant?: (v: any) => void;
   toggleWishlist: (id: string) => void;
@@ -141,6 +142,7 @@ export default function HeroSection({
   badge,
   tagline,
   addToCart,
+  onInitiateCheckout,
   updateVariantAndProduct,
   switchVariant,
   toggleWishlist,
@@ -603,6 +605,11 @@ export default function HeroSection({
 
               <a
                 href={canBuy ? orderNowLink : undefined}
+                onClick={() => {
+                  if (canBuy && selectedProduct?.id) {
+                    onInitiateCheckout?.(selectedProduct.id, quantity);
+                  }
+                }}
                 aria-disabled={!canBuy}
                 className={`mt-3 flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl border-2 bg-white text-base font-bold transition-all ${
                   canBuy
