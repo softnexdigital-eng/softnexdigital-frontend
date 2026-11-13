@@ -109,19 +109,30 @@ export default function VariantsGrid({
           </button>
         </div>
       ) : (
-        <div data-product-grid="true" className={useGridView ? "grid grid-cols-[repeat(auto-fill,minmax(186px,1fr))] gap-2 sm:gap-3" : "space-y-3"}>
+        <div
+          data-product-grid="true"
+          className={
+            useGridView
+              ? "flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 sm:snap-none lg:grid-cols-4 xl:grid-cols-5"
+              : "space-y-3"
+          }
+        >
           {safeProducts.map((p) => (
-            <ProductCard
+            <div
               key={p.id}
-              product={toCardProduct(p)}
-              onAddToCart={(variantId, qty, attrs) => addToCart(variantId, qty ?? 1, attrs)}
-              onBuyNow={(variantId) => onOpenDetails(p.id, variantId)}
-              onOpenDetails={onOpenDetails}
-              onToggleWishlist={(variantId) => toggleWishlist(variantId)}
-              isWishlisted={(variantId) => wishlistIds.has(variantId)}
-              cartLoading={cartLoading}
-              className={!useGridView ? "w-full" : undefined}
-            />
+              className={useGridView ? "w-[calc((100%-0.75rem)*0.92)] shrink-0 snap-start sm:w-auto sm:shrink sm:snap-align-none" : "w-full"}
+            >
+              <ProductCard
+                product={toCardProduct(p)}
+                onAddToCart={(variantId, qty, attrs) => addToCart(variantId, qty ?? 1, attrs)}
+                onBuyNow={(variantId) => onOpenDetails(p.id, variantId)}
+                onOpenDetails={onOpenDetails}
+                onToggleWishlist={(variantId) => toggleWishlist(variantId)}
+                isWishlisted={(variantId) => wishlistIds.has(variantId)}
+                cartLoading={cartLoading}
+                className="w-full h-full"
+              />
+            </div>
           ))}
         </div>
       )}
