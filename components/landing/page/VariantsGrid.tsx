@@ -113,14 +113,14 @@ export default function VariantsGrid({
           data-product-grid="true"
           className={
             useGridView
-              ? "flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 sm:snap-none lg:grid-cols-4 xl:grid-cols-5"
+              ? "flex gap-2 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide sm:grid sm:gap-3 sm:grid-cols-3 sm:overflow-visible sm:pb-0 sm:snap-none lg:grid-cols-4 xl:grid-cols-5"
               : "space-y-3"
           }
         >
           {safeProducts.map((p) => (
             <div
               key={p.id}
-              className={useGridView ? "w-[calc((100%-0.75rem)*0.92)] shrink-0 snap-start sm:w-auto sm:shrink sm:snap-align-none" : "w-full"}
+              className={useGridView ? "w-[64%] shrink-0 snap-start sm:w-auto sm:shrink sm:snap-align-none" : "w-full"}
             >
               <ProductCard
                 product={toCardProduct(p)}
