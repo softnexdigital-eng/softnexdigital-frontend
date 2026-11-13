@@ -1,0 +1,19 @@
+
+> frontend@0.1.0 dev
+> node init && next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.103:3000
+- Environments: .env.local
+✓ Ready in 943ms
+
+[browser] Failed to refresh authenticated user: AxiosError: Network Error
+    at XMLHttpRequest.handleError (file://E:/my local git/multitenant-saas-backend/frontend/.next/dev/static/chunks/node_modules_0yj_iol._.js:4816:25)
+    at Axios.request (file://E:/my local git/multitenant-saas-backend/frontend/.next/dev/static/chunks/node_modules_0yj_iol._.js:5906:49)
+    at async AuthProvider.useCallback[refreshUser] (file://E:/my local git/multitenant-saas-backend/frontend/.next/dev/static/chunks/_0pjhj5u._.js:177:30)
+    at async AuthProvider.useEffect.loadUser (file://E:/my local git/multitenant-saas-backend/frontend/.next/dev/static/chunks/_0pjhj5u._.js:199:33) (file://E:/my local git/multitenant-saas-backend/frontend/.next/dev/static/chunks/_0pjhj5u._.js:201:41)
+[browser] Failed to fetch branches: AxiosError: Network Error
+    at XMLHttpRequest.handleError (file://E:/my local git/multitenant-saas-backend/frontend/.next/dev/static/chunks/node_modules_0yj_iol._.js:4816:25) (file://E:/my local git/multitenant-saas-backend/frontend/.next/dev/static/chunks/_13guqj2._.js:1420:25)
+ GET /dashboard 200 in 2.0s (next.js: 1396ms, proxy.ts: 261ms, application-code: 370ms)
+[?25h

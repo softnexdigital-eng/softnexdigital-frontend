@@ -1,0 +1,515 @@
+@import "tailwindcss";
+
+:root {
+  --nav-h: 64px;
+  --dock-h: 48px;
+  --background: #F8FAFC;
+  --foreground: #111827;
+  /* Storefront green (Hero/CategoryNav/CategoryGrid spec) */
+  --store-green: #16a34a;
+  --store-green-dark: #15803d;
+  --store-green-light: #dcfce7;
+
+
+  /* Brand palette: Indigo (change these 12 values to re-theme the whole app) */
+  --brand-50: #EEF2FF;
+  --brand-100: #E0E7FF;
+  --brand-200: #C7D2FE;
+  --brand-300: #A5B4FC;
+  --brand-400: #818CF8;
+  --brand-500: #6366F1;
+  --brand-600: #4F46E5; /* main */
+  --brand-700: #4338CA; /* hover */
+  --brand-800: #3730A3; /* dark / gradient end */
+  --brand-900: #312E81;
+  --brand-950: #1E1B4B;
+
+  /* Amber accent (offers, highlights) */
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #F59E0B;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+
+  /* Text */
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+
+  /* Border */
+  --border-color: #E5E7EB;
+  --border-light: #D1D5DB;
+
+  /* Status */
+  --success: #10B981;
+  --error: #EF4444;
+  --stars: #FBBF24;
+
+  /* Header */
+  --header-bg: #FFFFFF;
+  --header-border: #E5E7EB;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --breakpoint-xs: 475px;
+  --color-store-green: var(--store-green);
+  --color-store-green-dark: var(--store-green-dark);
+  --color-store-green-light: var(--store-green-light);
+
+  /* New utilities: bg-brand-600, text-brand-700, border-brand-200 ... */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+
+  /* Existing blue-* classes automatically follow the brand palette,
+     so the old !important overrides are no longer needed. */
+  --color-blue-50: var(--brand-50);
+  --color-blue-100: var(--brand-100);
+  --color-blue-200: var(--brand-200);
+  --color-blue-300: var(--brand-300);
+  --color-blue-400: var(--brand-400);
+  --color-blue-500: var(--brand-500);
+  --color-blue-600: var(--brand-600);
+  --color-blue-700: var(--brand-700);
+  --color-blue-800: var(--brand-800);
+  --color-blue-900: var(--brand-900);
+  --color-blue-950: var(--brand-950);
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: 'Noto Sans Bengali', Arial, Helvetica, sans-serif;
+  overflow-x: clip;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+html,
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+[id="features"],
+[id="stores"],
+[id="demo"],
+[id="steps"],
+[id="pricing"],
+[id="why"],
+[id="faq"] {
+  scroll-margin-top: calc(var(--nav-h) + var(--dock-h) + 12px);
+}
+
+.landing-dock-slot {
+  height: var(--dock-h);
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 40;
+}
+
+.landing-section-dock {
+  position: relative;
+  height: var(--dock-h);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border-bottom: 1px solid rgb(239 68 68 / 0.12);
+  background: rgb(255 255 255 / 0.82);
+  backdrop-filter: blur(16px);
+}
+
+.landing-dock-hidden {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.landing-dock-scroll {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0 16px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
+}
+
+.landing-dock-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.landing-dock-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-width: 44px;
+  max-width: 180px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 9999px;
+  padding: 0 14px;
+  color: #52525b;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.landing-dock-chip-hidden {
+  max-width: 0;
+  min-width: 0;
+  border-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  opacity: 0;
+  transform: translateY(10px) scale(0.82);
+  pointer-events: none;
+}
+
+.landing-dock-chip-active {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: white;
+}
+
+.landing-dock-chip:focus-visible,
+.landing-mobile-tab:focus-visible,
+.landing-scroll-top:focus-visible {
+  outline: 3px solid #f87171;
+  outline-offset: 3px;
+}
+
+.landing-dock-progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  transform-origin: left center;
+  background: #dc2626;
+  will-change: transform;
+}
+
+.landing-scroll-top {
+  position: fixed;
+  right: 16px;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  z-index: 45;
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9999px;
+  background: white;
+  color: #dc2626;
+  box-shadow: 0 8px 24px rgb(24 24 27 / 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.82);
+}
+
+.landing-scroll-top-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.landing-mobile-bar {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 50;
+  display: grid;
+  height: calc(64px + env(safe-area-inset-bottom));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: start;
+  border-top: 1px solid rgb(228 228 231 / 0.9);
+  background: rgb(255 255 255 / 0.96);
+  padding: 4px 8px env(safe-area-inset-bottom);
+  backdrop-filter: blur(16px);
+}
+
+.landing-mobile-tab {
+  display: flex;
+  min-width: 48px;
+  min-height: 48px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 12px;
+  color: #71717a;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
+.landing-hero-title {
+  font-size: clamp(1.75rem, 5vw, 3.75rem);
+  line-height: 1.2;
+}
+
+.landing-section-title {
+  font-size: clamp(1.375rem, 4vw, 2.25rem);
+  line-height: 1.25;
+}
+
+.landing-mobile-tab-active {
+  color: #dc2626;
+}
+
+.landing-mobile-register {
+  align-self: start;
+  justify-self: center;
+  gap: 2px;
+  color: #dc2626;
+}
+
+.landing-mobile-register-icon {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid white;
+  border-radius: 9999px;
+  background: #dc2626;
+  color: white;
+  font-size: 24px;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgb(220 38 38 / 0.28);
+}
+
+.landing-reveal {
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+.landing-reveal[data-visible="true"] {
+  opacity: 1;
+}
+
+.hero-enter {
+  opacity: 1;
+}
+
+.hero-mockup-glow {
+  position: absolute;
+  inset: 10% -12%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(248 113 113 / 0.22), transparent 68%);
+  filter: blur(28px);
+}
+
+.hero-scroll-line {
+  height: 28px;
+  width: 1px;
+  transform-origin: top;
+  background: #f87171;
+}
+
+.store-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.store-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: store-marquee-scroll 42s linear infinite;
+}
+
+.store-marquee-group {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 16px;
+  padding-right: 16px;
+}
+
+.store-marquee:hover .store-marquee-track,
+.store-marquee:focus-within .store-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes store-marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .store-marquee {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .store-marquee::-webkit-scrollbar {
+    display: none;
+  }
+
+  .store-marquee-track {
+    animation: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .landing-scroll-top {
+    right: 24px;
+    bottom: 24px;
+  }
+
+  .landing-mobile-bar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .landing-mobile-tab,
+  .landing-dock-chip,
+  a,
+  button {
+    transition-duration: 180ms;
+  }
+
+  .landing-section-dock {
+    transition: opacity 180ms ease, visibility 180ms ease;
+  }
+
+  .landing-dock-chip {
+    transition: max-width 240ms ease, opacity 180ms ease, transform 240ms ease,
+      padding 240ms ease, border-width 240ms ease, color 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .landing-scroll-top {
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  .landing-reveal {
+    transition: opacity 520ms ease, transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .hero-enter {
+    opacity: 0;
+    animation: landing-hero-enter 600ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+
+  .hero-enter-1 { animation-delay: 80ms; }
+  .hero-enter-2 { animation-delay: 180ms; }
+  .hero-enter-3 { animation-delay: 280ms; }
+  .hero-enter-4 { animation-delay: 380ms; }
+
+  a:active,
+  button:active {
+    transform: scale(0.97);
+  }
+
+  .hero-float {
+    animation: hero-float 7s ease-in-out 1s infinite;
+  }
+
+  .hero-scroll-line {
+    animation: hero-scroll-cue 1.8s ease-in-out infinite;
+  }
+
+  .landing-dock-chip:not(.landing-dock-chip-hidden) {
+    animation: landing-chip-enter 240ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @keyframes landing-hero-enter {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes hero-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+  }
+
+  @keyframes hero-scroll-cue {
+    0%, 100% { transform: scaleY(0.65); opacity: 0.45; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  @keyframes landing-chip-enter {
+    from { opacity: 0; transform: translateY(10px) scale(0.82); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .landing-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: auto;
+  }
+}
+
+/* Custom xs breakpoint (475px) for responsive design */
+@media (min-width: 475px) {
+  .\32xl\:hidden { display: inherit; }
+}
+
+/* Gradients that used blue -> cyan / indigo now use the brand colors */
+.bg-gradient-to-br.from-blue-500.to-cyan-500 {
+  background-image: linear-gradient(to bottom right, var(--brand-600), var(--brand-800)) !important;
+}
+.to-cyan-500 {
+  --tw-gradient-to: var(--brand-800) !important;
+}
+.bg-gradient-to-br.from-blue-100.to-indigo-100 {
+  background-image: linear-gradient(to bottom right, var(--brand-100), var(--brand-50)) !important;
+}
+
+/* Form controls */
+input:focus, select:focus, textarea:focus {
+  --tw-ring-color: var(--brand-600) !important;
+  border-color: var(--brand-600) !important;
+  outline: none;
+}
+[type="checkbox"]:checked, [type="radio"]:checked {
+  accent-color: var(--brand-600) !important;
+}
+[type="checkbox"]:focus, [type="radio"]:focus {
+  --tw-ring-color: var(--brand-600) !important;
+}
