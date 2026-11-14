@@ -50,7 +50,7 @@ export default function VariantsPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string | string[]>>({});
   const [bulkShow, setBulkShow] = useState(false);
   const [bulkBasePrice, setBulkBasePrice] = useState('');
   const [bulkSkuPrefix, setBulkSkuPrefix] = useState('');
@@ -148,10 +148,12 @@ export default function VariantsPage() {
     setDraggedOption(null);
   };
 
-  const buildAttributesFromSelections = (): Record<string, string> => {
-    const attrs: Record<string, string> = {};
+  const buildAttributesFromSelections = (): Record<string, string | string[]> => {
+    const attrs: Record<string, string | string[]> = {};
     for (const [key, val] of Object.entries(selectedAttributes)) {
-      if (val) attrs[key] = val;
+      if (val) {
+        attrs[key] = Array.isArray(val) ? val.filter(Boolean) : val;
+      }
     }
     return attrs;
   };
@@ -237,7 +239,7 @@ export default function VariantsPage() {
       fetchVariants(variantProductId);
     }
     setEditingVariant(variant);
-    setSelectedAttributes(variant.attributes as Record<string, string>);
+    setSelectedAttributes(variant.attributes as Record<string, string | string[]>);
     reset({
       productId: variantProductId || selectedProductId,
       sku: variant.sku,
@@ -564,7 +566,12 @@ export default function VariantsPage() {
                        <div key={tpl.id}>
                          <label className="block text-xs font-medium text-gray-600 mb-1">{tpl.name}</label>
                          {isColor ? (
-                           <select value={selectedAttributes[tpl.name] || ''}
+                           <select
+                             value={
+                               Array.isArray(selectedAttributes[tpl.name])
+                                 ? selectedAttributes[tpl.name][0] || ''
+                                 : (selectedAttributes[tpl.name] || '')
+                             }
                              onChange={(e) => {
                                const newAttrs = { ...selectedAttributes, [tpl.name]: e.target.value };
                                setSelectedAttributes(newAttrs);
@@ -576,7 +583,12 @@ export default function VariantsPage() {
                              ))}
                            </select>
                          ) : (
-                           <select value={selectedAttributes[tpl.name] || ''}
+                           <select
+                             value={
+                               Array.isArray(selectedAttributes[tpl.name])
+                                 ? selectedAttributes[tpl.name][0] || ''
+                                 : (selectedAttributes[tpl.name] || '')
+                             }
                              onChange={(e) => setSelectedAttributes({ ...selectedAttributes, [tpl.name]: e.target.value })}
                              className="w-full px-3 py-2.5 border border-gray-200 rounded-sm outline-none text-sm">
                              <option value="">-- Select --</option>
@@ -596,8 +608,8 @@ export default function VariantsPage() {
                  <label className="block text-sm font-medium text-gray-700 mb-1.5">🖼️ Image URL for Color: {selectedAttributes.Color}</label>
                  <input
                    type="text"
-                   value={colorImageUrls[selectedAttributes.Color] || ''}
-                   onChange={(e) => setColorImageUrls({ ...colorImageUrls, [selectedAttributes.Color]: e.target.value })}
+                   value={colorImageUrls[selectedAttributes.Color as string] || ''}
+                   onChange={(e) => setColorImageUrls({ ...colorImageUrls, [selectedAttributes.Color as string]: e.target.value })}
                    className="w-full px-4 py-2.5 border border-gray-200 rounded-sm outline-none text-sm"
                    placeholder="https://example.com/color-image.jpg"
                  />

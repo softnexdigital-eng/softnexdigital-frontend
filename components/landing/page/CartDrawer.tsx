@@ -59,7 +59,10 @@ export default function CartDrawer({
     setIsCartOrder(true);
     const allIds = new Set<string>(cartItems.map((item) => item.variant.id));
     setSelectedCartItems(allIds);
-    setTimeout(scrollToOrder, 200);
+    // Use requestAnimationFrame for reliable scroll after state updates
+    requestAnimationFrame(() => {
+      setTimeout(scrollToOrder, 100);
+    });
   };
 
   return (

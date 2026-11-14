@@ -1534,10 +1534,12 @@ export default function PublicLandingPage() {
     else showToast.error("পণ্য নির্বাচন করুন");
   }, [selectedVariant, toggleWishlist]);
 
-  const scrollToOrder = () =>
-    document
-      .getElementById("order-form")
-      ?.scrollIntoView({ behavior: "smooth" });
+  const scrollToOrder = useCallback(() => {
+    const el = document.getElementById("order-form");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
 
   // ভ্যারিয়েন্ট বদলে সিলেক্টেড ভ্যারিয়েন্ট আপডেট (স্ক্রল/ভিউমোড পরিবর্তন ছাড়া)
   // গ্যালারি ইমেজ ক্লিকে ভ্যারিয়েন্ট বদলে অ্যাট্রিবিউট প্রি-সিলেক্ট করা হয় না — ইউজার নিজেই বেছে নেবে

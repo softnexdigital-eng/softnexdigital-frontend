@@ -112,11 +112,12 @@ export function isOptionAvailable(
   val: string,
   productName?: string,
 ): boolean {
-  const test: Record<string, string> = { ...selected, [key]: val };
+  // Independent per-key availability: does ANY variant have this key-value in stock?
+  // (does not require all selected attributes to match a single variant)
   return (variants || []).some((v) => {
     if ((v.stock ?? 0) <= 0) return false;
     const attrs = normalizeAttributes(v.attributes as unknown as Record<string, unknown>, productName);
-    return Object.entries(test).every(([k, sv]) => !sv || attrs[k] === sv);
+    return attrs[key] === val;
   });
 }
 
