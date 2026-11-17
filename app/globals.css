@@ -490,6 +490,54 @@ body {
   .\32xl\:hidden { display: inherit; }
 }
 
+.hero-banner-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+.hero-banner-carousel {
+  width: 100%;
+  aspect-ratio: 5 / 2;
+  min-height: 180px;
+}
+
+.hero-featured-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+.hero-featured-card {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .hero-featured-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-banner-layout-with-featured {
+    grid-template-columns: minmax(0, 1fr) 400px;
+    align-items: stretch;
+  }
+
+  .hero-banner-carousel {
+    height: 400px;
+    aspect-ratio: auto;
+    min-height: 0;
+  }
+
+  .hero-featured-grid {
+    height: 400px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Gradients that used blue -> cyan / indigo now use the brand colors */
 .bg-gradient-to-br.from-blue-500.to-cyan-500 {
   background-image: linear-gradient(to bottom right, var(--brand-600), var(--brand-800)) !important;

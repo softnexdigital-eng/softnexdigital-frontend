@@ -50,9 +50,9 @@ export default function VariantsGrid({
   });
 
   return (
-    <div className="space-y-4">
+    <div className="mt-9 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h2 className="text-sm font-black text-gray-800 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-[#17181c] flex items-center gap-2">
           <span className="w-2 h-4 rounded-full inline-block" style={{ background: primary }} />
           আজকের বিশেষ মূল্য
         </h2>
@@ -113,7 +113,7 @@ export default function VariantsGrid({
           data-product-grid="true"
           className={
             useGridView
-              ? "flex gap-2 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide sm:grid sm:gap-3 sm:grid-cols-3 sm:overflow-visible sm:pb-0 sm:snap-none lg:grid-cols-4 xl:grid-cols-5"
+              ? "flex gap-2 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide sm:grid sm:gap-4 sm:grid-cols-3 sm:overflow-visible sm:pb-0 sm:snap-none lg:grid-cols-4 xl:grid-cols-5"
               : "space-y-3"
           }
         >

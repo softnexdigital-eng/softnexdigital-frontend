@@ -116,17 +116,17 @@ export default function Navbar({
   };
 
   const iconBtn =
-    "relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-gray-700 transition-all hover:bg-gray-100 active:scale-95 sm:h-11 sm:w-11";
+    "relative grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl border border-[#e7e8ec] bg-white text-[#17181c] transition-all hover:bg-gray-50 active:scale-95 sm:h-11 sm:w-11";
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur transition-shadow duration-300"
+      className="sticky top-0 z-50 border-b border-[#e7e8ec] bg-white transition-shadow duration-300"
       style={{
         boxShadow: isScrolled ? "0 4px 20px rgba(0,0,0,0.06)" : "none",
         paddingTop: "env(safe-area-inset-top)",
       }}
     >
-      <div className="mx-auto flex max-w-[1620px] items-center gap-2 px-3 py-2 sm:gap-4 sm:px-5 sm:py-3 lg:gap-8 lg:px-8">
+      <div className="mx-auto flex max-w-[1280px] items-center gap-3 px-3 py-2 sm:h-[68px] sm:gap-5 sm:px-5 sm:py-0">
         {/* Menu (mobile/tablet) */}
         <button onClick={() => setMobileSidebarOpen(true)} className={`${iconBtn} lg:hidden -ml-1`} aria-label="মেনু খুলুন">
           <FaBars className="text-lg" />
@@ -159,8 +159,8 @@ export default function Navbar({
         </a>
 
         {/* Desktop / tablet search */}
-        <div className="relative mx-auto hidden max-w-2xl flex-1 md:block">
-          <div className="flex w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-all focus-within:border-gray-300 focus-within:bg-white focus-within:shadow-sm">
+        <div className="relative hidden flex-1 md:block">
+          <div className="flex h-11 w-full overflow-hidden rounded-xl border border-[#e7e8ec] bg-[#f6f6f8] transition-all focus-within:border-gray-300 focus-within:bg-white">
             <input
               value={searchQuery}
               onChange={(e) => {
@@ -169,7 +169,7 @@ export default function Navbar({
               }}
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              className="flex-1 bg-transparent px-4 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400"
+              className="flex-1 bg-transparent px-4 text-sm text-gray-800 outline-none placeholder:text-gray-400"
               placeholder="পণ্য খুঁজুন (নাম, বৈশিষ্ট্য, দাম)..."
             />
             <button
@@ -204,7 +204,7 @@ export default function Navbar({
               <FaPhoneAlt className="text-sm" />
             </div>
             <div className="leading-tight">
-              <div className="text-[11px] font-medium text-gray-500">হটলাইন</div>
+              <div className="text-[11px] font-medium text-[#6b6f78]">হটলাইন</div>
               <div className="text-sm font-bold text-gray-900">{displayPhone}</div>
             </div>
           </a>
@@ -236,7 +236,7 @@ export default function Navbar({
           {/* Cart */}
           <button
             onClick={() => setCartDrawerOpen(true)}
-            className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-white shadow-sm transition-all hover:opacity-95 active:scale-95 sm:h-11 sm:w-11"
+            className="relative grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl border border-transparent text-white transition-all hover:opacity-95 active:scale-95 sm:h-11 sm:w-11"
             style={{ background: primary }}
             aria-label="কার্ট"
           >

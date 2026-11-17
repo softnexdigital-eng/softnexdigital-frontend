@@ -30,10 +30,11 @@ interface ProductCardProps {
 const LOW_STOCK_THRESHOLD = 5;
 
 const chipBase =
-  'rounded-lg border text-center leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500';
+  'rounded-md border text-center leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1';
+
 const chipState = (isSelected: boolean, available: boolean) =>
   isSelected
-    ? 'border-red-500 bg-red-50 text-gray-900'
+    ? 'border-[var(--primary,#e11d48)] bg-[var(--primary,#e11d48)] text-white'
     : available
       ? 'border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200/70'
       : 'border-transparent bg-gray-100 text-gray-400 line-through opacity-50 cursor-not-allowed';
@@ -77,6 +78,8 @@ function ProductCard({
   const stock = activeVariant?.stock ?? 0;
   const outOfStock = !activeVariant || stock <= 0;
   const lowStock = !outOfStock && stock <= LOW_STOCK_THRESHOLD;
+  const isPreOrder = !!(activeVariant as any)?.isPreOrder || !!(activeVariant as any)?.preOrderPrice;
+  const preOrderPrice = (activeVariant as any)?.preOrderPrice;
   const displayImage = activeVariant?.image || (product.images && product.images[0]) || null;
   const wished = isWishlisted ? isWishlisted(activeVariant?.id || '') : false;
   const attrsForAction = useMemo(
@@ -88,8 +91,6 @@ function ProductCard({
     activeVariant?.compareAtPrice != null && activeVariant.compareAtPrice > activeVariant.price;
   const showVariants = visibleKeys.length > 0 && variants.length > 1;
 
-  // When every variant carries only ONE attribute (e.g. some are "Gram", some "KG"),
-  // they are really a single choice, so show them together in one compact row.
   const mergedChips = useMemo(() => {
     const allSingle = variants.length > 0 && variants.every((v) => Object.keys(v.attributes || {}).length <= 1);
     if (!allSingle) return null;
@@ -105,10 +106,7 @@ function ProductCard({
     }
     return chips.length > 1 ? chips : null;
   }, [variants]);
-  // Per-card "adding" state. `cartLoading` is one shared flag from the parent, so using it
-  // directly would show a spinner on EVERY card. Here only the card that was clicked reacts:
-  //  - if onAddToCart returns a Promise, we wait for it;
-  //  - otherwise we follow the parent's `cartLoading` flag, but only for this card.
+
   const [adding, setAdding] = useState(false);
   const waitingForProp = useRef(false);
   const sawLoading = useRef(false);
@@ -134,7 +132,6 @@ function ProductCard({
         await result;
         setAdding(false);
       } else {
-        // Handler is not async: follow the parent's cartLoading flag; give up if it never starts.
         waitingForProp.current = true;
         sawLoading.current = false;
         setTimeout(() => {
@@ -173,8 +170,10 @@ function ProductCard({
 
   if (!activeVariant) return null;
 
-  const stockLabel = outOfStock ? 'স্টক নেই' : lowStock ? `মাত্র ${stock}টি বাকি` : 'স্টকে আছে';
+  const stockLabel = outOfStock ? 'স্টক শেষ' : lowStock ? `মাত্র ${stock}টি বাকি` : 'স্টকে আছে';
   const stockColor = outOfStock ? 'text-red-600' : lowStock ? 'text-amber-600' : 'text-green-600';
+
+  const buttonDisabled = outOfStock || adding;
 
   return (
     <div
@@ -187,28 +186,31 @@ function ProductCard({
           openDetails();
         }
       }}
-      className={`w-full h-full bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col cursor-pointer shadow-sm hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${className || ''}`}
+      className={`w-full h-full bg-white border-[#e7e8ec] rounded-xl overflow-hidden flex flex-col cursor-pointer shadow-sm hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--primary,#e11d48)] ${className || ''}`}
     >
-      {/* Image */}
-      <div className="relative aspect-[3/2] bg-gray-50">
+      <div className="relative aspect-square bg-gray-50">
         {displayImage ? (
           <img
             src={displayImage}
             alt={product.name}
-            className={`w-full h-full object-cover ${outOfStock ? 'opacity-60' : ''}`}
+            className={`w-full h-full object-cover ${outOfStock ? 'opacity-55' : ''} ${isPreOrder ? 'opacity-95' : ''}`}
             loading="lazy"
             decoding="async"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">ছবি নেই</div>
+          <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">পণ্যের ছবি</div>
         )}
-
-        {discount > 0 && !outOfStock && (
-          <span className="absolute top-2 left-2 bg-red-500 text-white text-[11px] font-bold px-2 py-1 rounded-full leading-none">
-            -{discount}%
-          </span>
-        )}
-
+        <span className="absolute top-2 left-2 z-10 rounded-md px-2 py-0.5 text-[10px] font-bold leading-none">
+          {isPreOrder ? (
+            <span className="bg-amber-100 text-amber-800 border border-amber-200">প্রি-অর্ডার</span>
+          ) : discount > 0 && !outOfStock ? (
+            <span className="bg-[var(--primary,#e11d48)] text-white border border-[var(--primary,#e11d48)]">-{discount}%</span>
+          ) : outOfStock ? (
+            <span className="bg-gray-100 text-gray-600 border border-gray-200">স্টক শেষ</span>
+          ) : (
+            <span className="bg-[var(--primary,#e11d48)] text-white border border-[var(--primary,#e11d48)]">নতুন</span>
+          )}
+        </span>
         <button
           type="button"
           onClick={(e) => {
@@ -216,21 +218,17 @@ function ProductCard({
             if (onToggleWishlist && activeVariant) onToggleWishlist(activeVariant.id);
           }}
           onKeyDown={stop}
-          className="absolute top-2 right-2 h-7 w-7 rounded-full bg-white/95 border border-gray-200 flex items-center justify-center shadow-sm active:scale-95 transition-transform"
-          aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'}
+          className="absolute top-2 right-2 z-10 h-[34px] w-[34px] rounded-full bg-white/95 border border-gray-200 flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+          aria-label={wished ? 'উইশলিস্ট থেকে সরান' : 'উইশলিস্টে যোগ করুন'}
           aria-pressed={wished}
         >
-          {wished ? <FaHeart className="text-red-500 text-xs" /> : <FaRegHeart className="text-gray-500 text-xs" />}
+          {wished ? <FaHeart className="text-red-500 text-[14px]" /> : <FaRegHeart className="text-gray-500 text-[14px]" />}
         </button>
       </div>
-
-      {/* Content */}
-      <div className="p-2 flex flex-col gap-1.5 flex-1">
-        <h3 className="text-[13px] font-semibold text-gray-900 line-clamp-2 min-h-[2.1rem] leading-tight break-words">
+      <div className="p-3 pb-4 flex flex-col gap-2 flex-1">
+        <h3 className="text-[14px] font-semibold text-[#17181c] line-clamp-2 min-h-[2.4rem] leading-tight break-words">
           {product.name}
         </h3>
-
-        {/* Variant selector */}
         {showVariants && (
           mergedChips ? (
             <div>
@@ -250,12 +248,9 @@ function ProductCard({
                         setSelected(normalizeAttributes(variant.attributes as unknown as Record<string, unknown>, product.name));
                       }}
                       onKeyDown={stop}
-                      className={`${chipBase} ${chipState(isSelected, available)} min-h-[30px] px-2 py-1`}
+                      className={`${chipBase} ${chipState(isSelected, available)} min-h-[30px] px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap`}
                     >
-                      <span className="flex items-baseline justify-center gap-1 whitespace-nowrap">
-                        <span className="text-xs font-semibold">{val}</span>
-                        <span className={`text-[10px] ${isSelected ? 'text-red-600' : 'text-gray-500'}`}>৳{variant.price}</span>
-                      </span>
+                      {val}
                     </button>
                   );
                 })}
@@ -290,47 +285,60 @@ function ProductCard({
             </div>
           )
         )}
-
-        {/* Price + stock (one line) */}
-        <div className="mt-auto flex items-baseline justify-between gap-2">
+        <div className="mt-auto flex items-baseline justify-between gap-2 min-w-0">
           <div className="flex items-baseline flex-wrap gap-x-1.5 min-w-0">
-            <span className="text-base font-bold text-gray-900 leading-none">৳{activeVariant.price}</span>
+            <span className="text-[18px] font-semibold text-[#17181c] leading-none">৳{isPreOrder && preOrderPrice != null ? preOrderPrice : activeVariant.price}</span>
             {hasCompare && (
-              <span className="text-xs text-gray-400 line-through">৳{activeVariant.compareAtPrice}</span>
+              <span className="text-[13px] text-gray-500 line-through">৳{activeVariant.compareAtPrice}</span>
             )}
           </div>
           <span className={`text-[11px] font-semibold shrink-0 ${stockColor}`}>{stockLabel}</span>
         </div>
-
-        {/* Actions */}
-        <div className="grid grid-cols-[1fr_1.5fr] gap-2">
+        {isPreOrder ? (
           <button
             type="button"
-            disabled={outOfStock || adding}
+            disabled={buttonDisabled}
             onClick={handleAddToCart}
             onKeyDown={stop}
-            className="h-8 flex items-center justify-center gap-1.5 text-[13px] font-medium rounded-lg border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            className="w-full h-[42px] flex items-center justify-center gap-1.5 text-[14px] font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 active:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
           >
             {adding ? (
-              <span className="h-3.5 w-3.5 rounded-full border-2 border-gray-500 border-t-transparent animate-spin" aria-hidden />
+              <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" aria-hidden="true" />
             ) : (
-              <FaShoppingCart className="text-xs" />
+              <FaBolt className="text-[13px]" />
             )}
-            Cart
+            প্রি-অর্ডার করুন
           </button>
-          <button
-            type="button"
-            disabled={outOfStock || adding}
-            onClick={(e) => {
-              stop(e);
-              if (onBuyNow && activeVariant) onBuyNow(activeVariant.id, 1, attrsForAction);
-            }}
-            onKeyDown={stop}
-            className="h-8 flex items-center justify-center gap-1.5 text-[13px] font-semibold rounded-lg bg-red-500 text-white hover:bg-red-600 active:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
-          >
-            <FaBolt className="text-xs" /> Buy Now
-          </button>
-        </div>
+        ) : (
+          <div className="grid grid-cols-[38%_62%] gap-2">
+            <button
+              type="button"
+              disabled={buttonDisabled}
+              onClick={handleAddToCart}
+              onKeyDown={stop}
+              className="h-[42px] flex items-center justify-center gap-1.5 text-[14px] font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--primary,#e11d48)]"
+            >
+              {adding ? (
+                <span className="h-4 w-4 rounded-full border-2 border-gray-500 border-t-transparent animate-spin" aria-hidden="true" />
+              ) : (
+                <FaShoppingCart className="text-[13px]" />
+              )}
+              কার্ট
+            </button>
+            <button
+              type="button"
+              disabled={buttonDisabled}
+              onClick={(e) => {
+                stop(e);
+                if (onBuyNow && activeVariant) onBuyNow(activeVariant.id, 1, attrsForAction);
+              }}
+              onKeyDown={stop}
+              className="h-[42px] flex items-center justify-center gap-1.5 text-[14px] font-bold rounded-lg bg-[var(--primary,#e11d48)] text-white hover:bg-[var(--primary-dark,#be123c)] active:bg-[var(--primary-dark,#be123c)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--primary,#e11d48)]"
+            >
+              <FaBolt className="text-[13px]" /> অর্ডার করুন
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

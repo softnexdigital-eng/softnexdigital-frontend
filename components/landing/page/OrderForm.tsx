@@ -216,7 +216,9 @@ export default function OrderForm({
                           ? Object.values(selectedVariantAttrs).join(" / ")
                           : formatAttributes(selectedVariant.attributes)}
                       </div>
-                      <div className="font-black text-red-600 text-sm">৳{(selectedVariant.price * quantity).toFixed(0)}{quantity > 1 ? <span className="text-xs text-gray-500 ml-1">({quantity} পিস)</span> : ""}{selectedVariant.stock <= 0 ? <span className="text-red-500 text-xs ml-2">স্টক শেষ</span> : ""}</div>
+                      <div className="font-black text-red-600 text-sm">
+                        ৳{(selectedVariant.price * quantity).toFixed(0)}{quantity > 1 ? <span className="text-xs text-gray-500 ml-1">({quantity} পিস)</span> : ""}{selectedVariant.isPreOrder ? <span className="text-amber-600 text-xs ml-2 font-bold">প্রি-অর্ডার</span> : selectedVariant.stock <= 0 ? <span className="text-red-500 text-xs ml-2">স্টক শেষ</span> : ""}
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -224,15 +226,15 @@ export default function OrderForm({
                 )}
               </div>
               <div>
-                <label className="block text-xs font-black mb-1.5 text-gray-700">সংখ্যা</label>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button type="button" onClick={() => setQuantity(roundToStep(Math.max(QUANTITY_STEP, quantity - QUANTITY_STEP)))} className="w-10 h-10 font-bold text-lg flex items-center justify-center border-2 transition-all hover:bg-white rounded-sm" style={{ borderColor: `${primary}50`, color: primary }}><FaMinus className="text-xs" /></button>
-                  <input type="number" min={QUANTITY_STEP} step={QUANTITY_STEP} value={quantity} onChange={e => setQuantity(roundToStep(Math.max(QUANTITY_STEP, Number(e.target.value) || QUANTITY_STEP)))} className="w-20 px-3 py-2 text-sm text-center font-bold border-2 border-gray-200 bg-gray-50 rounded-sm" />
-                  <button type="button" disabled={!selectedVariant || (selectedVariant?.stock ?? 0) <= 0 || quantity >= (selectedVariant?.stock ?? 0)} onClick={() => setQuantity(roundToStep(Math.min(selectedVariant?.stock || 99, quantity + QUANTITY_STEP)))} className="w-10 h-10 font-bold text-lg flex items-center justify-center border-2 transition-all hover:bg-white rounded-sm disabled:opacity-40 disabled:cursor-not-allowed" style={{ borderColor: `${primary}50`, color: primary }} aria-disabled={!selectedVariant || (selectedVariant?.stock ?? 0) <= 0 || quantity >= (selectedVariant?.stock ?? 0)}><FaPlus className="text-xs" /></button>
-                  {selectedVariant && (selectedVariant.stock ?? 0) > 0 && quantity >= (selectedVariant.stock ?? 0) && (
-                    <span className="text-[11px] font-semibold text-amber-700">সর্বোচ্চ {selectedVariant.stock ?? 0} টি</span>
-                  )}
-                </div>
+<label className="block text-xs font-black mb-1.5 text-gray-700">সংখ্যা</label>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button type="button" onClick={() => setQuantity(roundToStep(Math.max(QUANTITY_STEP, quantity - QUANTITY_STEP)))} className="w-10 h-10 font-bold text-lg flex items-center justify-center border-2 transition-all hover:bg-white rounded-sm" style={{ borderColor: `${primary}50`, color: primary }}><FaMinus className="text-xs" /></button>
+                <input type="number" min={QUANTITY_STEP} step={QUANTITY_STEP} value={quantity} onChange={e => setQuantity(roundToStep(Math.max(QUANTITY_STEP, Number(e.target.value) || QUANTITY_STEP)))} className="w-20 px-3 py-2 text-sm text-center font-bold border-2 border-gray-200 bg-gray-50 rounded-sm" />
+                <button type="button" disabled={!selectedVariant || (selectedVariant.isPreOrder ? false : (selectedVariant?.stock ?? 0) <= 0) || quantity >= (selectedVariant?.stock ?? 0)} onClick={() => setQuantity(roundToStep(Math.min(selectedVariant?.stock || 99, quantity + QUANTITY_STEP)))} className="w-10 h-10 font-bold text-lg flex items-center justify-center border-2 transition-all hover:bg-white rounded-sm disabled:opacity-40 disabled:cursor-not-allowed" style={{ borderColor: `${primary}50`, color: primary }} aria-disabled={!selectedVariant || (selectedVariant.isPreOrder ? false : (selectedVariant?.stock ?? 0) <= 0) || quantity >= (selectedVariant?.stock ?? 0)}><FaPlus className="text-xs" /></button>
+                {selectedVariant && !selectedVariant.isPreOrder && (selectedVariant.stock ?? 0) > 0 && quantity >= (selectedVariant.stock ?? 0) && (
+                  <span className="text-[11px] font-semibold text-amber-700">সর্বোচ্চ {selectedVariant.stock ?? 0} টি</span>
+                )}
+              </div>
               </div>
             </>
           )}
@@ -268,7 +270,7 @@ export default function OrderForm({
             <label className="block text-xs font-black mb-1.5 text-gray-700">বিশেষ নির্দেশনা <span className="text-gray-400 font-normal">(ঐচ্ছিক)</span></label>
             <textarea {...register("notes")} rows={2} className="w-full px-3.5 py-2.5 text-sm resize-none border-2 border-gray-200 bg-gray-50 transition-all rounded-sm" onFocus={e => e.target.style.borderColor = primary} onBlur={e => e.target.style.borderColor = "#e5e7eb"} placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন" />
           </div>
-          <button type="submit" disabled={isCartOrder ? (cartOrderProcessing || selectedCartItems.size === 0) : (orderLoading || !selectedVariant || (selectedVariant?.stock ?? 0) <= 0)} className="w-full text-white font-black py-4 text-base disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:opacity-90 shadow-md rounded-sm" style={{ background: `linear-gradient(135deg,${primary},${primaryDark})` }}>
+          <button type="submit" disabled={isCartOrder ? (cartOrderProcessing || selectedCartItems.size === 0) : (orderLoading || !selectedVariant || (!selectedVariant.isPreOrder && (selectedVariant?.stock ?? 0) <= 0))} className="w-full text-white font-black py-4 text-base disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:opacity-90 shadow-md rounded-sm" style={{ background: `linear-gradient(135deg,${primary},${primaryDark})` }}>
             {isCartOrder ? (cartOrderProcessing ? <span className="flex items-center justify-center gap-2"><span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white inline-block rounded-sm" /> অর্ডার করা হচ্ছে...</span> : `✅ নির্বাচিত ${selectedCartItems.size}টি পণ্য অর্ডার করুন`) : (orderLoading ? <span className="flex items-center justify-center gap-2"><span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white inline-block rounded-sm" /> অর্ডার করা হচ্ছে...</span> : "✅ অর্ডার নিশ্চিত করুন")}
           </button>
           <div className="flex items-center justify-center gap-4 text-[10px] text-gray-400">

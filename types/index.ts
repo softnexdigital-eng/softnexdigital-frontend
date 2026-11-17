@@ -85,6 +85,9 @@ export interface Variant {
   createdAt?: string;
   updatedAt?: string;
   variantImages?: VariantImage[];
+  isPreOrder?: boolean;
+  preOrderEstimatedDelivery?: string | null;
+  preOrderPrice?: number | null;
 }
 
 export interface VariantImage {

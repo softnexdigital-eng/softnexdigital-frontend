@@ -2,6 +2,7 @@
 
 import { FaShoppingCart, FaTimes, FaMinus, FaPlus, FaRegTrashAlt, FaRegImage } from "react-icons/fa";
 import { normalizeAttributes } from "@/lib/variants";
+import { useRouter } from "next/navigation";
 
 interface CartDrawerItem {
   id?: string;
@@ -28,6 +29,7 @@ interface CartDrawerProps {
   scrollToOrder: () => void;
   onInitiateCheckout: (items: { productId: string; quantity: number }[]) => void;
   primary: string;
+  storeSlug?: string;
 }
 
 export default function CartDrawer({
@@ -42,7 +44,9 @@ export default function CartDrawer({
   scrollToOrder,
   onInitiateCheckout,
   primary,
+  storeSlug,
 }: CartDrawerProps) {
+  const router = useRouter();
   if (!open) return null;
 
   const cartItems = cartData?.items ?? [];
@@ -59,10 +63,16 @@ export default function CartDrawer({
     setIsCartOrder(true);
     const allIds = new Set<string>(cartItems.map((item) => item.variant.id));
     setSelectedCartItems(allIds);
-    // Use requestAnimationFrame for reliable scroll after state updates
-    requestAnimationFrame(() => {
-      setTimeout(scrollToOrder, 100);
-    });
+
+    //プロダクト詳細ページ（バリアント付き）に遷移してオーダーフォームを表示
+    const firstVariantId = cartItems[0]?.variant?.id;
+    if (storeSlug && firstVariantId) {
+      router.push(`/${storeSlug}?variant=${firstVariantId}`);
+    } else {
+      requestAnimationFrame(() => {
+        setTimeout(scrollToOrder, 100);
+      });
+    }
   };
 
   return (

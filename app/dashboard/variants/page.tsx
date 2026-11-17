@@ -18,6 +18,9 @@ interface AttributeTemplate {
 interface VariantWithExtra extends Variant {
   costPrice?: number;
   supplierId?: string;
+  isPreOrder?: boolean;
+  preOrderEstimatedDelivery?: string | null;
+  preOrderPrice?: number | null;
 }
 
 type VariantFormData = {
@@ -29,6 +32,9 @@ type VariantFormData = {
   stock: number;
   image: string;
   supplierId: string;
+  isPreOrder: boolean;
+  preOrderEstimatedDelivery: string;
+  preOrderPrice: number | null;
 };
 
 type VariantDraft = {
@@ -179,6 +185,9 @@ export default function VariantsPage() {
         image: data.image || undefined,
         attributes,
         supplierId: data.supplierId || undefined,
+        isPreOrder: data.isPreOrder,
+        preOrderEstimatedDelivery: data.preOrderEstimatedDelivery || undefined,
+        preOrderPrice: data.preOrderPrice !== null && data.preOrderPrice !== undefined ? Number(data.preOrderPrice) : null,
       };
       let savedVariantId: string | undefined;
       if (editingVariant) {
@@ -249,6 +258,9 @@ export default function VariantsPage() {
       stock: variant.stock,
       image: variant.image || '',
       supplierId: variant.supplierId || '',
+      isPreOrder: variant.isPreOrder || false,
+      preOrderEstimatedDelivery: variant.preOrderEstimatedDelivery || '',
+      preOrderPrice: variant.preOrderPrice || null,
     });
     // Load existing color images
     const colorImgs: Record<string, string> = {};
@@ -288,6 +300,20 @@ export default function VariantsPage() {
       fetchVariants();
     } catch {
       showToast.error(t('common.error'));
+    }
+  };
+
+  const handleTogglePreOrder = async (variant: VariantWithExtra) => {
+    const next = !variant.isPreOrder;
+    try {
+      await api.patch(`/preorder/${variant.id}/toggle`, { isPreOrder: next });
+      setVariants((prev) =>
+        prev.map((v) => (v.id === variant.id ? { ...v, isPreOrder: next } : v))
+      );
+      showToast.success(next ? 'প্রি-অর্ডার চালু হয়েছে' : 'প্রি-অর্ডার বন্ধ হয়েছে');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      showToast.error(err.response?.data?.message || 'প্রি-অর্ডার আপডেট ব্যর্থ');
     }
   };
 
@@ -381,7 +407,7 @@ export default function VariantsPage() {
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-red-600 text-white text-sm rounded-sm hover:bg-red-700 transition-all">
             <FiRefreshCw className="w-4 h-4" /> {t('variants.bulkGenerate')}
           </button>
-          <button onClick={() => { setEditingVariant(null); setSelectedAttributes({}); reset({ sku: '', price: 0, compareAtPrice: 0, costPrice: 0, stock: 0, image: '', supplierId: '' }); setShowForm(true); }}
+          <button onClick={() => { setEditingVariant(null); setSelectedAttributes({}); reset({ sku: '', price: 0, compareAtPrice: 0, costPrice: 0, stock: 0, image: '', supplierId: '', isPreOrder: false, preOrderEstimatedDelivery: '', preOrderPrice: null }); setShowForm(true); }}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-sm hover:bg-blue-700 transition-all">
             <FiPlus className="w-4 h-4" /> {t('variants.add')}
           </button>
@@ -546,6 +572,21 @@ export default function VariantsPage() {
                   {suppliers.map((s) => (<option key={s.id} value={s.id}>{s.name}</option>))}
                 </select>
               </div>
+              <div className="flex items-center gap-3 sm:col-span-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                  <input type="checkbox" {...register('isPreOrder')}
+                    className="w-4 h-4 rounded border-gray-200 text-blue-600 focus:ring-blue-500" />
+                  <span>Pre-Order</span>
+                </label>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Pre-Order Estimated Delivery</label>
+                  <input {...register('preOrderEstimatedDelivery')} type="text" className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="e.g. 14 days" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Pre-Order Price</label>
+                  <input {...register('preOrderPrice', { valueAsNumber: true })} type="number" step="0.01" className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="0.00" />
+                </div>
+              </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('variants.image')}</label>
                 <input {...register('image')}
@@ -671,6 +712,9 @@ export default function VariantsPage() {
                           <button onClick={() => handleEdit(variant)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"><FiEdit2 className="w-3.5 h-3.5" /></button>
                           <button onClick={() => handleDelete(variant.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"><FiTrash2 className="w-3.5 h-3.5" /></button>
                           <button onClick={() => handleAdjustStock(variant.id)} className="px-2 py-1 text-red-600 bg-red-50 rounded-lg text-xs font-semibold hover:bg-red-100 transition-colors">Stock</button>
+                          <button onClick={() => handleTogglePreOrder(variant)} className="px-2 py-1 text-amber-600 bg-amber-50 rounded-lg text-xs font-semibold hover:bg-amber-100 transition-colors">
+                            {variant.isPreOrder ? 'Pre-Order ON' : 'Pre-Order OFF'}
+                          </button>
                         </div>
                       </td>
                     </tr>

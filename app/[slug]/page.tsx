@@ -180,9 +180,15 @@ import OrderForm from "@/components/landing/page/OrderForm";
 import ReviewsSection from "@/components/landing/page/ReviewsSection";
 import FAQSection from "@/components/landing/page/FAQSection";
 import ContactSection from "@/components/landing/page/ContactSection";
-import Footer from "@/components/landing/page/Footer";
+import StoreFooter from "@/components/landing/page/StoreFooter";
+import Header from "@/components/landing/page/Header";
+import HeroBanner from "@/components/landing/page/HeroBanner";
+import CategoryTiles from "@/components/landing/page/CategoryTiles";
 import WishlistDrawer from "@/components/landing/page/WishlistDrawer";
 import CartDrawer from "@/components/landing/page/CartDrawer";
+import BestProductsSection from "@/components/landing/page/BestProductsSection";
+import PreOrderSection from "@/components/landing/page/PreOrderSection";
+import CategoryNavStrip from "@/components/landing/page/CategoryNavStrip";
 import { FiPackage, FiShoppingCart, FiTag, FiX } from "react-icons/fi";
 
 // ===== নতুন BannerSlider কম্পোনেন্ট =====
@@ -194,119 +200,6 @@ interface BannerItem {
   categoryId?: string;
   categoryName?: string;
   linkUrl?: string;
-}
-
-function BannerSlider({ 
-  banners, 
-  onBannerClick 
-}: { 
-  banners?: BannerItem[]; 
-  onBannerClick?: (banner: BannerItem) => void;
-}) {
-  const [current, setCurrent] = useState(0);
-  const total = banners?.length || 0;
-
-  useEffect(() => {
-    if (total === 0) return;
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % total);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [total]);
-
-    // যদি কোন ব্যানার না থাকে, ডামি ব্যানার দেখান
-  const bannerList: BannerItem[] = [...(total > 0 && banners ? banners : [
-    {
-      id: "dummy-1",
-      imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80",
-      title: "Summer Sale",
-      description: "Up to 50% off on electronics"
-    },
-    {
-      id: "dummy-2", 
-      imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&q=80",
-      title: "New Arrivals",
-      description: "Check out our latest products"
-    },
-    {
-      id: "dummy-3",
-      imageUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80",
-      title: "Best Deals",
-      description: "Amazing offers every day"
-    },
-  ])];
-
-  const handleBannerClick = (banner: BannerItem, idx: number) => {
-    // Only allow click on real banners (not dummy ones)
-    if (banner.id.startsWith("dummy-")) return;
-    if (onBannerClick) onBannerClick(banner);
-  };
-
-  return (
-    <div className="relative w-full h-66 md:h-80 lg:h-[520px] overflow-hidden" style={{ borderRadius: "14px" }}>
-      {/* Premium Dark Gradient Background */}
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(165deg, #111827 0%, #1F2937 50%, #374151 100%)' }}>
-        {/* Subtle radial lighting effect */}
-        <div className="absolute top-[-30%] left-[-20%] w-[80%] h-[80%] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, rgba(22,163,74,0.3) 0%, transparent 70%)' }}></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full opacity-10" style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%)' }}></div>
-        
-        {/* Glass morphism decorative elements */}
-        <div className="absolute top-16 right-24 w-24 h-24 backdrop-blur-sm rounded-2xl transform rotate-12 border border-white/10" style={{ background: 'rgba(255,255,255,0.03)' }}></div>
-        <div className="absolute top-32 right-48 w-16 h-16 backdrop-blur-sm rounded-2xl transform -rotate-6 border border-white/8" style={{ background: 'rgba(255,255,255,0.03)' }}></div>
-        <div className="absolute bottom-24 right-32 w-20 h-20 backdrop-blur-sm rounded-2xl transform rotate-45 border border-white/8" style={{ background: 'rgba(255,255,255,0.03)' }}></div>
-        <div className="absolute bottom-16 right-16 w-14 h-14 backdrop-blur-sm rounded-2xl transform -rotate-12 border border-white/8" style={{ background: 'rgba(255,255,255,0.03)' }}></div>
-      </div>
-
-      {/* Banner slides */}
-      {bannerList.map((banner, idx) => (
-        <div
-          key={banner.id}
-          className={`absolute inset-0 transition-opacity duration-700 ${
-            idx === current ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <img
-            src={banner.imageUrl}
-            alt={banner.title || `Banner ${idx + 1}`}
-            className="w-full h-full object-cover"
-          />
-          {/* Overlay gradient for better text readability */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)' }}></div>
-        </div>
-      ))}
-
-      {/* Hero Content Overlay */}
-      <div className="absolute inset-0 flex items-center">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="max-w-2xl">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-              {bannerList[current].title || ""}
-            </h2>
-            <p className="text-lg md:text-xl text-white/80 mb-6" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
-              {bannerList[current].description || "Discover our premium selection today"}
-            </p>
-            {/* <button className="text-white font-bold px-8 py-3 shadow-lg hover:shadow-xl transition-all hover:scale-105" style={{ background: '#F59E0B', borderRadius: '10px' }}>
-              Shop Now →
-            </button> */}
-          </div>
-        </div>
-      </div>
-
-      {/* Dot indicators */}
-      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
-        {bannerList.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrent(idx)}
-            className={`w-2.5 h-2.5 transition-all ${
-              idx === current ? "bg-white w-6" : "bg-white/40"
-            }`}
-            style={{ borderRadius: "4px" }}
-          />
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export default function PublicLandingPage() {
@@ -692,6 +585,10 @@ export default function PublicLandingPage() {
     const products = data?.products && data.products.length ? data.products : data?.product ? [data.product] : [];
     return products;
   }, [data]);
+
+  const preOrderProducts: Product[] = useMemo(() => {
+    return (allProducts || []).filter((p) => Array.isArray(p.variants) && p.variants.length > 0 && p.variants.some((v: Variant) => v.isPreOrder || (v as any).preOrderPrice != null));
+  }, [allProducts]);
 
   const variants: Variant[] = useMemo(
     () => allProducts.flatMap((p) => (Array.isArray(p.variants) ? p.variants : [])),
@@ -1224,8 +1121,8 @@ export default function PublicLandingPage() {
   };
 
   const onSubmitOrder = async (formData: OrderFormData) => {
-    if (!selectedVariant || selectedVariant.stock <= 0) {
-      showToast.error(selectedVariant ? "এই ভ্যারিয়েন্টটি স্টকে নেই" : "সাইজ ও কালার সিলেক্ট করুন");
+    if (!selectedVariant || (!selectedVariant.isPreOrder && selectedVariant.stock <= 0)) {
+      showToast.error(selectedVariant ? "এই ভ্যারিয়েন্টটি স্টকে নেই" : "সাইজ ও কালার সিলেক্ট করুন");
       return;
     }
     if (orderSubmissionInFlightRef.current) return;
@@ -1885,7 +1782,7 @@ export default function PublicLandingPage() {
     <div
       style={{
         fontFamily: "'Hind Siliguri','Noto Sans Bengali',sans-serif",
-        background: "#FFFFFF",
+        background: "#fdfffc",
         minHeight: "100vh",
       }}
       className="rounded-sm"
@@ -1910,6 +1807,14 @@ export default function PublicLandingPage() {
         .glow-border-content{position:relative;z-index:1;margin:2px;height:calc(100% - 4px);overflow:hidden;border-radius:1px}
       `}</style>
 
+      {/* Announcement bar */}
+      <div
+        className="w-full px-4 sm:px-6 py-2 text-center text-[13px] font-medium text-white"
+        style={{ background: `var(--primary,#e11d48)` }}
+      >
+        {(data?.tenant?.companyName || data?.tenant?.name) ? `${data.tenant.companyName || data.tenant.name} — এক্সপ্রেস ডেলিভারি, আজেই অর্ডার করুন` : "এক্সপ্রেস ডেলিভারি - আজেই অর্ডার করুন"}
+      </div>
+
       <Navbar
         displayLogo={displayLogo}
         displayPhone={displayPhone}
@@ -1933,6 +1838,7 @@ export default function PublicLandingPage() {
         whatsappNumber={whatsappNumber}
         data={data}
       />
+
 
       <MobileSidebar
         open={mobileSidebarOpen}
@@ -1959,106 +1865,82 @@ export default function PublicLandingPage() {
       />
 
       <div className="max-w-[1590px] mx-auto  sm:px-6 py-0.5">
-        {/* ===== হোম মোড – BannerSlider + VariantsGrid + Reviews ===== */}
+        {/* ===== হোম মোড – Hero banner, categories, products, and reviews ===== */}
         {viewMode === "home" && (
           <>
-            {/* Desktop: Categories Column (left) + Banner (right, narrower) */}
-            <div className="flex gap-0 mt-0 mb-2">
-              {/* Desktop Categories Column */}
-              <DesktopSidebar
+            {/* Category nav strip */}
+            {categories.length > 0 && (
+              <CategoryNavStrip
                 categories={categories}
-                brands={brands}
-                variants={variants}
                 selectedCategory={selectedCategory}
-                selectedSubcategory={selectedSubcategory}
-                selectedBrand={selectedBrand}
-                expandedCategoryId={expandedCategoryId}
-                expandedBrandId={expandedBrandId}
-                selectedVariant={selectedVariant}
-                variantProductMap={variantProductMap}
-                productImage={productImage}
-                data={data}
-                filteredVariants={filteredVariants}
-                priceMin={priceMin}
-                priceMax={priceMax}
-                onPriceMinChange={setPriceMin}
-                onPriceMaxChange={setPriceMax}
                 onSelectCategory={(id) => {
                   setSelectedCategory(id);
                   setSelectedSubcategory(null);
                 }}
-                onExpandCategory={(id) => setExpandedCategoryId(id)}
-                onSelectSubcategory={(id) => setSelectedSubcategory(id)}
-                onSelectBrand={(id) => setSelectedBrand(id)}
-                onExpandBrand={(id) => setExpandedBrandId(id)}
-                onUpdateVariant={updateVariantAndProduct}
                 primary={PRIMARY}
               />
+            )}
+            <HeroBanner
+              banners={(data.banners || []).map((banner) => ({
+                image: banner.imageUrl,
+                link: banner.linkUrl,
+                alt: banner.title,
+                categoryId: banner.categoryId,
+              }))}
+              featured={allProducts}
+              onOpenDetails={(productId, variantId) => openDetail(productId, variantId)}
+              onBannerClick={(banner) => {
+                if (banner.categoryId) {
+                  setSelectedCategory(banner.categoryId);
+                  setSelectedSubcategory(null);
+                  const sp = new URLSearchParams(searchParams.toString());
+                  sp.delete("variant");
+                  router.replace(sp.toString() ? `/${storeSlug}?${sp.toString()}` : `/${storeSlug}`, { scroll: false });
+                } else if (banner.link) {
+                  window.open(banner.link, "_blank", "noopener,noreferrer");
+                }
+              }}
+              primary={PRIMARY}
+              placeholder
+            />
 
-              {/* Banner - narrower on desktop */}
-              <div className="flex-1 min-w-0 glow-border-wrap">
-                <div className="glow-border-content">
-                  <BannerSlider 
-                    banners={data.banners} 
-                onBannerClick={(banner) => {
-                  if (banner.categoryId) {
-                    setSelectedCategory(banner.categoryId);
-                    setSelectedSubcategory(null);
-                    const sp = new URLSearchParams(searchParams.toString());
-                    sp.delete("variant");
-                    router.replace(sp.toString() ? `/${storeSlug}?${sp.toString()}` : `/${storeSlug}`, { scroll: false });
-                  } else if (banner.linkUrl) {
-                    window.open(banner.linkUrl, '_blank');
-                  }
+            <CategoryTiles
+              categories={categories.slice(0, 7).map((category) => ({
+                id: category.id,
+                name: category.name,
+                image: category.image || category.imageUrl || category.thumbnail || null,
+              }))}
+              onSelectCategory={(id) => {
+                setSelectedCategory(selectedCategory === id ? null : id);
+                setSelectedSubcategory(null);
+              }}
+              placeholder
+            />
+
+            {/* <AnimSection delay={90}>
+              <BestProductsSection
+                products={allProducts}
+                wishlistIds={wishlistIds}
+                addToCart={addToCart}
+                onOpenDetails={(productId, variantId) => {
+                  const p = allProducts.find((x) => x.id === productId);
+                  if (p?.id) trackMetaEvent("InitiateCheckout", [{ productId: p.id, quantity: 1 }]);
+                  openDetail(productId, variantId);
                 }}
-                  />
-                </div>
-              </div>
-            </div>
+                toggleWishlist={toggleWishlist}
+                primary={PRIMARY}
+              />
+            </AnimSection> */}
 
-            {/* Mobile Category Grid (below Banner) - 3 columns, square boxes */}
-           {categories.length > 0 && (
-  <div className="lg:hidden mt-3 mb-1">
-    {/* gap-px এবং bg-gray-200 ব্যবহার করা হয়েছে যাতে ভেতরে সুন্দর 1px বর্ডার তৈরি হয় */}
-    <div className="grid grid-cols-3 gap-px bg-gray-200 border border-gray-200 rounded-md overflow-hidden">
-      {categories.map((cat: any) => {
-        const isActive = selectedCategory === cat.id;
-        return (
-          <button
-            key={cat.id}
-            onClick={() => {
-              const newSelected = selectedCategory === cat.id ? null : cat.id;
-              setSelectedCategory(newSelected);
-              setSelectedSubcategory(null);
-            }}
-            // aspect-square বাদ দিয়ে min-h-[72px] দেওয়া হয়েছে।
-            // ট্যাপ করার সময় ব্লিংক বন্ধ করতে [-webkit-tap-highlight-color:transparent] দেওয়া হয়েছে।
-            className={`flex flex-col items-center justify-center p-2 min-h-[72px] transition-colors duration-200 text-center outline-none [-webkit-tap-highlight-color:transparent] ${
-              isActive
-                ? "bg-red-50 text-red-600 font-semibold"
-                : "bg-white text-gray-600 active:bg-gray-50"
-            }`}
-          >
-            {/* টেক্সট সাইজ 13px করা হয়েছে */}
-            <span className="text-[13px] leading-snug line-clamp-2 px-0.5">
-              {cat.name}
-            </span>
-            
-            {cat.count ? (
-              <span 
-                className={`text-[10px] mt-0.5 ${
-                  isActive ? "text-red-400" : "text-gray-400"
-                }`}
-              >
-                ({cat.count})
-              </span>
-            ) : null}
-          </button>
-        );
-      })}
-    </div>
-  </div>
-)}
+           
+
+            {/* সব পণ্য section header */}
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-base font-bold text-[#17181c]">সব পণ্য</h2>
+              <a href="#" className="text-[13px] font-semibold text-[#e11d48] uppercase tracking-wider">
+                ফিল্টার ও সর্ট
+              </a>
+            </div>
 
             <AnimSection delay={90}>
               <VariantsGrid
@@ -2076,6 +1958,21 @@ export default function PublicLandingPage() {
                 setSortBy={setSortBy}
                 activeFiltersCount={activeFiltersCount}
                 clearFilters={clearFilters}
+                primary={PRIMARY}
+              />
+            </AnimSection>
+
+             <AnimSection delay={120}>
+              <PreOrderSection
+                products={allProducts}
+                wishlistIds={wishlistIds}
+                addToCart={addToCart}
+                onOpenDetails={(productId, variantId) => {
+                  const p = allProducts.find((x) => x.id === productId);
+                  if (p?.id) trackMetaEvent("InitiateCheckout", [{ productId: p.id, quantity: 1 }]);
+                  openDetail(productId, variantId);
+                }}
+                toggleWishlist={toggleWishlist}
                 primary={PRIMARY}
               />
             </AnimSection>
@@ -2504,19 +2401,12 @@ export default function PublicLandingPage() {
         )}
       </div>
 
-      <Footer
-        displayLogo={displayLogo}
+      <StoreFooter
         companyName={companyName}
-        displayPhone={displayPhone}
-        displayPhone2={displayPhone2}
-        displayEmail={displayEmail}
-        displayAddress={displayAddress}
-        displaySocialLinks={displaySocialLinks}
-        termsContent={termsContent}
-        showTerms={showTerms}
-        setShowTerms={setShowTerms}
-        primary={PRIMARY}
-        primaryDark={PRIMARY_DARK}
+        intro="আমাদের অনলাইন দোকানে স্বাগতম"
+        phone={displayPhone}
+        email={displayEmail}
+        address={displayAddress}
       />
 
       <WishlistDrawer
@@ -2543,6 +2433,7 @@ export default function PublicLandingPage() {
 
         onInitiateCheckout={initiateCheckout}
         primary={PRIMARY}
+        storeSlug={storeSlug}
       />
 
       <div
@@ -2550,13 +2441,13 @@ export default function PublicLandingPage() {
         style={{ boxShadow: "0 -4px 20px rgba(0,0,0,0.08)" }}
       >
         <div className="flex items-stretch">
-          <div className="flex-1 px-4 py-2.5">
-            {selectedVariant && selectedVariant.stock > 0 ? (
-              <>
-                <div className="text-[10px] text-gray-500 truncate">
-                  {selectedProduct?.name || data.product?.name} —{" "}
-                  {Object.values(selectedVariantAttrs).join(" / ")}
-                </div>
+        <div className="flex-1 px-4 py-2.5">
+          {selectedVariant && selectedVariant.isPreOrder || selectedVariant && selectedVariant.stock > 0 ? (
+            <>
+              <div className="text-[10px] text-gray-500 truncate">
+                {selectedProduct?.name || data.product?.name} —{" "}
+                {selectedVariant && selectedVariant.isPreOrder ? <span className="text-amber-600 font-semibold">প্রি-অর্ডার</span> : Object.keys(selectedVariantAttrs).length > 0 ? Object.values(selectedVariantAttrs).join(" / ") : formatVariantAttrs(selectedVariant?.attributes)}
+              </div>
                 <div className="font-black text-lg text-red-600">
                   ৳{selectedVariant.price.toFixed(0)}
                 </div>
@@ -2673,33 +2564,22 @@ export default function PublicLandingPage() {
         </div>
       )}
 
-      {marketingConsent === null && (
-        <aside
-          aria-label="Marketing cookie consent"
-          className="fixed inset-x-0 bottom-0 z-[70] border-t border-gray-200 bg-white p-4 shadow-2xl md:bottom-4 md:left-4 md:right-auto md:max-w-lg md:rounded-xl md:border"
-        >
-          <p className="text-sm font-bold text-gray-900">আপনার মার্কেটিং কুকির পছন্দ</p>
-          <p className="mt-1 text-xs leading-5 text-gray-600">
-            আপনার সম্মতি থাকলে এই দোকান Meta Pixel ও Conversions API ব্যবহার করে মার্কেটিং ইভেন্ট মাপবে। সম্মতি না দিলে কোনো Meta tracking চালু হবে না।
-          </p>
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              onClick={() => saveMarketingConsent(false)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
-            >
-              প্রত্যাখ্যান
-            </button>
-            <button
-              type="button"
-              onClick={() => saveMarketingConsent(true)}
-              className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-700"
-            >
-              সম্মতি দিন
-            </button>
-          </div>
-        </aside>
-      )}
-    </div>
-  );
+        {marketingConsent === null && (
+          <aside aria-label="Marketing cookie consent" className="fixed inset-x-0 bottom-0 z-[70] border-t border-gray-200 bg-white p-4 shadow-2xl md:bottom-4 md:left-4 md:right-auto md:max-w-lg md:rounded-xl md:border">
+            <p className="text-sm font-bold text-gray-900">আপনার মার্কেটিং কুকির পছন্দ</p>
+            <p className="mt-1 text-xs leading-5 text-gray-600">
+              আপনার সম্মতি থাকলে এই দোকান Meta Pixel ও Conversions API ব্যবহার করে মার্কেটিং ইভেন্ট মাপবে। সম্মতি না দিলে কোনো Meta tracking চালু হবে না।
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button type="button" onClick={() => saveMarketingConsent(false)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                প্রত্যাখ্যান
+              </button>
+              <button type="button" onClick={() => saveMarketingConsent(true)} className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-700">
+                সম্মতি দিন
+              </button>
+            </div>
+          </aside>
+        )}
+      </div>
+    );
 }
