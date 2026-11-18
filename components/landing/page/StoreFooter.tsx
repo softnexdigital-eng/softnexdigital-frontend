@@ -9,35 +9,96 @@ interface StoreFooterProps {
 }
 
 export default function StoreFooter({ companyName, intro, phone, email, address }: StoreFooterProps) {
-  const title = "mb-1.5 block text-sm font-bold text-white";
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="mt-12 bg-[#14161b] py-8 text-[13px] text-[#c9ccd4]">
+    <footer className="mt-16 bg-[#111318] pt-12 pb-8 text-[13px] text-gray-400 border-t border-[#1f242d]">
       <div className="mx-auto max-w-[1280px] px-5">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-6">
-          <div>
-            <b className={title}>{companyName}</b>
-            <p className="leading-relaxed">{intro}</p>
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-4 md:gap-8">
+          
+          {/* Column 1: Company Info */}
+          <div className="space-y-4 md:col-span-1">
+            <h3 className="text-base font-bold tracking-wide text-white">{companyName}</h3>
+            <p className="leading-relaxed text-gray-400 text-[13px]">
+              {intro || "আপনার বিশ্বস্ত অনলাইন শপিং গন্তব্য। সেরা মানের পণ্য এবং দ্রুত হোম ডেলিভারি নিশ্চিত করি।" }
+            </p>
+            {address && (
+              <p className="text-[12.55px] text-gray-400">
+                <strong className="text-gray-200">ঠিকানা:</strong> {address}
+              </p>
+            )}
           </div>
-          <div>
-            <b className={title}>যোগাযোগ</b>
-            <ul className="space-y-1.5">
-              {phone && <li>ফোন: {phone}</li>}
-              {email && <li>ইমেইল: {email}</li>}
-              {/* {address && <li>ঠিকানা: {address}</li>} */}
+
+          {/* Column 2: Customer Support Links */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold uppercase tracking-wider text-white">গ্রাহক সহায়তা</h4>
+            <ul className="space-y-2.5">
+              <li>
+                <a href="#" className="transition-colors hover:text-white">ডেলিভারি নীতি</a>
+              </li>
+              <li>
+                <a href="#" className="transition-colors hover:text-white">রিটার্ন ও রিফান্ড নীতি</a>
+              </li>
+              <li>
+                <a href="#" className="transition-colors hover:text-white">গোপনীয়তা নীতি (Privacy Policy)</a>
+              </li>
+              <li>
+                <a href="#" className="transition-colors hover:text-white">শর্তাবলী (Terms & Conditions)</a>
+              </li>
             </ul>
           </div>
-          <div>
-            <b className={title}>সহায়তা</b>
-            <ul className="space-y-1.5">
-              <li>ডেলিভারি নীতি</li>
-              <li>রিটার্ন ও রিফান্ড</li>
-              <li>সহায়তা কেন্দ্র</li>
-              <li>গোপনীয়তা নীতি</li>
+
+          {/* Column 3: Contact Info */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold uppercase tracking-wider text-white">যোগাযোগ করুন</h4>
+            <ul className="space-y-2.5">
+              {phone && (
+                <li>
+                  <a href={`tel:${phone}`} className="flex items-center gap-2 transition-colors hover:text-white">
+                    <span className="text-emerald-400">ফোন:</span> {phone}
+                  </a>
+                </li>
+              )}
+              {email && (
+                <li>
+                  <a href={`mailto:${email}`} className="flex items-center gap-2 transition-colors hover:text-white">
+                    <span className="text-emerald-400">ইমেইল:</span> {email}
+                  </a>
+                </li>
+              )}
+              <li className="text-gray-400 text-[12px] pt-1">
+                সপ্তাহের ৭ দিনই খোলা: সকাল ৯টা - রাত ১০টা
+              </li>
             </ul>
           </div>
+
+          {/* Column 4: Newsletter / Social & Trust Badge */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold uppercase tracking-wider text-white">আমাদের সাথে থাকুন</h4>
+            <p className="text-[12.5px] text-gray-400">
+              নতুন অফার ও ডিসকাউন্ট পেতে আমাদের সাথে যুক্ত থাকুন।
+            </p>
+            
+            {/* Social Icons Placeholder */}
+            <div className="flex items-center gap-3 pt-1">
+              <a href="#" aria-label="Facebook" className="grid h-9 w-9 place-items-center rounded-lg bg-[#1f242d] text-gray-300 transition-all hover:bg-emerald-500 hover:text-white">
+                <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="#" aria-label="Instagram" className="grid h-9 w-9 place-items-center rounded-lg bg-[#1f242d] text-gray-300 transition-all hover:bg-emerald-500 hover:text-white">
+                <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </a>
+            </div>
+          </div>
+
         </div>
-        <div className="mt-8 border-t border-[#3d3d4a] pt-6 text-center text-[11px] text-[#8a8a93]">
-          © {new Date().getFullYear()} {companyName}. সর্বস্বত্ব সংরক্ষিত।
+
+        {/* Divider and Copyright */}
+        <div className="mt-10 flex flex-col items-center justify-between border-t border-[#1f242d] pt-6 text-center text-[12px] text-gray-500 md:flex-row">
+          <p>© {currentYear} {companyName}. সর্বস্বত্ব সংরক্ষিত।</p>
+          <p className="mt-2 md:mt-0">
+            কারিগরি সহযোগিতায় — <span className="text-gray-400 font-medium">{companyName} টিম</span>
+          </p>
         </div>
       </div>
     </footer>
