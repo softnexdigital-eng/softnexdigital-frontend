@@ -1,7 +1,8 @@
 'use client';
 
 import { memo, useMemo, useState, useCallback, useEffect, useRef, type MouseEvent, type KeyboardEvent } from 'react';
-import { FaHeart, FaRegHeart, FaShoppingCart, FaBolt } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaBolt } from 'react-icons/fa';
+import { MdAddShoppingCart } from 'react-icons/md';
 import type { Variant } from '@/types';
 import {
   PublicProduct,
@@ -29,15 +30,34 @@ interface ProductCardProps {
 
 const LOW_STOCK_THRESHOLD = 5;
 
-const chipBase =
-  'rounded-md border text-center leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1';
+/* ---------- Theme-based class helpers ---------- */
+const P = 'var(--primary,#e11d48)';
+const PD = 'var(--primary-dark,#be123c)';
 
-const chipState = (isSelected: boolean, available: boolean) =>
-  isSelected
-    ? 'border-[var(--primary,#e11d48)] bg-[var(--primary,#e11d48)] text-white'
-    : available
-      ? 'border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200/70'
-      : 'border-transparent bg-gray-100 text-gray-400 line-through opacity-50 cursor-not-allowed';
+const focusRing = `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[${P}] focus-visible:ring-offset-2`;
+
+const shine =
+  'relative overflow-hidden before:pointer-events-none before:absolute before:inset-y-0 before:left-0 before:w-full before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent before:transition-transform before:duration-700 hover:before:translate-x-full';
+
+const btnBase =
+  'group/btn flex h-11 items-center justify-center gap-1.5 rounded-lg text-[14px] font-semibold transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:pointer-events-none disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50';
+
+const btnPrimary = `${btnBase} ${shine} ${focusRing} bg-[${P}] text-white shadow-sm hover:bg-[${PD}] hover:shadow-[0_8px_18px_-6px_${P}] active:shadow-inner`;
+
+const btnOutline = `${btnBase} ${focusRing} border border-[${P}] bg-white text-[${P}] hover:bg-[${P}] hover:text-white hover:shadow-[0_8px_18px_-6px_${P}]`;
+
+const tint = `bg-[color-mix(in_srgb,${P}_10%,white)]`;
+
+const chipClass = (isSelected: boolean, available: boolean) =>
+  [
+    'min-h-[32px] rounded-full border px-3.5 text-[13px] font-semibold whitespace-nowrap transition-all duration-150 active:scale-95',
+    `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[${P}] focus-visible:ring-offset-1`,
+    isSelected
+      ? `border-[${P}] bg-[${P}] text-white shadow-sm`
+      : available
+        ? `border-gray-300 bg-white text-gray-800 hover:border-[${P}] hover:text-[${P}]`
+        : 'border-gray-200 bg-gray-50 text-gray-300 line-through cursor-not-allowed',
+  ].join(' ');
 
 function ProductCard({
   product,
@@ -63,16 +83,14 @@ function ProductCard({
   const visibleKeys = useMemo(() => Object.keys(options).slice(0, 2), [options]);
   const defaultVariant = useMemo(() => getDefaultVariant(variants), [variants]);
 
-  const [selected, setSelected] = useState<Record<string, string>>(() => {
-    if (defaultVariant) return normalizeAttributes(defaultVariant.attributes as unknown as Record<string, unknown>, product.name);
-    return {};
-  });
+  const [selected, setSelected] = useState<Record<string, string>>(() =>
+    defaultVariant ? normalizeAttributes(defaultVariant.attributes as unknown as Record<string, unknown>, product.name) : {},
+  );
 
-  const activeVariant = useMemo(() => {
-    const match = findVariant(variants, selected, product.name);
-    if (match) return match;
-    return defaultVariant || variants[0];
-  }, [variants, selected, defaultVariant, product.name]);
+  const activeVariant = useMemo(
+    () => findVariant(variants, selected, product.name) || defaultVariant || variants[0],
+    [variants, selected, defaultVariant, product.name],
+  );
 
   const discount = getDiscountPercent(activeVariant);
   const stock = activeVariant?.stock ?? 0;
@@ -80,15 +98,14 @@ function ProductCard({
   const lowStock = !outOfStock && stock <= LOW_STOCK_THRESHOLD;
   const isPreOrder = !!(activeVariant as any)?.isPreOrder || !!(activeVariant as any)?.preOrderPrice;
   const preOrderPrice = (activeVariant as any)?.preOrderPrice;
-  const displayImage = activeVariant?.image || (product.images && product.images[0]) || null;
+  const displayImage = activeVariant?.image || product.images?.[0] || null;
   const wished = isWishlisted ? isWishlisted(activeVariant?.id || '') : false;
   const attrsForAction = useMemo(
     () => normalizeAttributes(activeVariant?.attributes as unknown as Record<string, unknown>, product.name),
     [activeVariant, product.name],
   );
 
-  const hasCompare =
-    activeVariant?.compareAtPrice != null && activeVariant.compareAtPrice > activeVariant.price;
+  const hasCompare = activeVariant?.compareAtPrice != null && activeVariant.compareAtPrice > activeVariant.price;
   const showVariants = visibleKeys.length > 0 && variants.length > 1;
 
   const mergedChips = useMemo(() => {
@@ -146,34 +163,110 @@ function ProductCard({
     }
   };
 
-  const stop = (e: MouseEvent | KeyboardEvent) => {
-    e.stopPropagation();
-  };
+  const stop = (e: MouseEvent | KeyboardEvent) => e.stopPropagation();
 
   const openDetails = useCallback(() => {
     if (!activeVariant) return;
     onOpenDetails?.(product.id, activeVariant.id);
   }, [onOpenDetails, product.id, activeVariant]);
 
-  const handleSelect = useCallback((key: string, val: string, e: MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setSelected((prev) => {
-      const next = { ...prev, [key]: val };
-      const match = findVariant(variants, next, product.name);
-      if (match) return normalizeAttributes(match.attributes as unknown as Record<string, unknown>, product.name);
-      const best = findBestVariantForSelection(variants, prev, key, val, product.name);
-      if (best) return normalizeAttributes(best.attributes as unknown as Record<string, unknown>, product.name);
-      return next;
-    });
-  }, [variants, product.name]);
+  const handleSelect = useCallback(
+    (key: string, val: string, e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setSelected((prev) => {
+        const next = { ...prev, [key]: val };
+        const match = findVariant(variants, next, product.name);
+        if (match) return normalizeAttributes(match.attributes as unknown as Record<string, unknown>, product.name);
+        const best = findBestVariantForSelection(variants, prev, key, val, product.name);
+        if (best) return normalizeAttributes(best.attributes as unknown as Record<string, unknown>, product.name);
+        return next;
+      });
+    },
+    [variants, product.name],
+  );
 
   if (!activeVariant) return null;
 
-  const stockLabel = outOfStock ? 'স্টক শেষ' : lowStock ? `মাত্র ${stock}টি বাকি` : 'স্টকে আছে';
-  const stockColor = outOfStock ? 'text-red-600' : lowStock ? 'text-amber-600' : 'text-green-600';
-
+  const price = isPreOrder && preOrderPrice != null ? preOrderPrice : activeVariant.price;
   const buttonDisabled = outOfStock || adding;
+
+  const Spinner = ({ dark }: { dark?: boolean }) => (
+    <span
+      className={`h-4 w-4 animate-spin rounded-full border-2 border-t-transparent ${dark ? `border-[${P}]` : 'border-white'}`}
+      aria-hidden="true"
+    />
+  );
+
+  const statusPill = outOfStock ? (
+    <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-bold leading-none text-gray-600">স্টক শেষ</span>
+  ) : isPreOrder ? (
+    <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold leading-none text-amber-800">প্রি-অর্ডার</span>
+  ) : lowStock ? (
+    <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold leading-none text-amber-700">মাত্র {stock}টি বাকি</span>
+  ) : null;
+
+  /* -------- Product name with hover/tap reveal tooltip -------- */
+  // Tailwind group is already on the outer card; we use a nested group/name
+  // so the tooltip only shows when the *name* itself is hovered/focused,
+  // keeping the rest of the card interaction untouched.
+  const NameWithTooltip = () => {
+    const [touchOpen, setTouchOpen] = useState(false);
+    const longPressTimer = useRef<number | null>(null);
+
+    const onTouchStart = () => {
+      longPressTimer.current = window.setTimeout(() => setTouchOpen(true), 350);
+    };
+    const clearTimer = () => {
+      if (longPressTimer.current) {
+        window.clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+    const onTouchEnd = () => {
+      clearTimer();
+      // keep open briefly for user to read, then close
+      if (touchOpen) window.setTimeout(() => setTouchOpen(false), 2200);
+    };
+
+    return (
+      <div
+        className="group/name relative"
+        onMouseEnter={() => {}}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={() => { clearTimer(); setTouchOpen(false); }}
+      >
+        <h3
+          tabIndex={0}
+          aria-label={product.name}
+          className={`line-clamp-1 break-words text-[16px] font-bold leading-snug text-gray-900 ${focusRing} rounded-md`}
+        >
+          {product.name}
+        </h3>
+
+        {/* Tooltip / full-name reveal */}
+        <div
+          role="tooltip"
+          className={[
+            'pointer-events-none absolute left-0 top-full z-30 mt-1.5 w-max max-w-[min(92vw,22rem)]',
+            'origin-top-left scale-95 rounded-xl border border-gray-200 bg-white/98 p-2.5 pr-3',
+            'text-[13px] font-semibold leading-relaxed text-gray-800 shadow-xl backdrop-blur',
+            'whitespace-normal break-words opacity-0 transition-all duration-200',
+            'group-hover/name:scale-100 group-hover/name:opacity-100',
+            'group-focus-within/name:scale-100 group-focus-within/name:opacity-100',
+            touchOpen ? 'scale-100 opacity-100' : '',
+          ].join(' ')}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute -top-1 left-3 h-2 w-2 rotate-45 border-l border-t border-gray-200 bg-white"
+          />
+          {product.name}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -186,82 +279,78 @@ function ProductCard({
           openDetails();
         }
       }}
-      className={`w-full h-full bg-white border-[#e7e8ec] rounded-xl overflow-hidden flex flex-col cursor-pointer shadow-sm hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--primary,#e11d48)] ${className || ''}`}
+      className={`group flex h-full w-full cursor-pointer flex-col rounded-3xl border border-gray-200 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[color-mix(in_srgb,${P}_45%,white)] hover:shadow-xl ${focusRing} ${className || ''}`}
     >
-      <div className="relative aspect-square bg-gray-50">
+      {/* Image */}
+      <div className="relative aspect-[4/3.6] overflow-hidden rounded-2xl bg-gray-50">
         {displayImage ? (
           <img
             src={displayImage}
             alt={product.name}
-            className={`w-full h-full object-cover ${outOfStock ? 'opacity-55' : ''} ${isPreOrder ? 'opacity-95' : ''}`}
             loading="lazy"
             decoding="async"
+            className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${outOfStock ? 'opacity-50' : ''}`}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">পণ্যের ছবি</div>
+          <div className="flex h-full w-full items-center justify-center text-sm text-gray-300">পণ্যের ছবি</div>
         )}
-        <span className="absolute top-2 left-2 z-10 rounded-md px-2 py-0.5 text-[10px] font-bold leading-none">
-          {isPreOrder ? (
-            <span className="bg-amber-100 text-amber-800 border border-amber-200">প্রি-অর্ডার</span>
-          ) : discount > 0 && !outOfStock ? (
-            <span className="bg-[var(--primary,#e11d48)] text-white border border-[var(--primary,#e11d48)]">-{discount}%</span>
-          ) : outOfStock ? (
-            <span className="bg-gray-100 text-gray-600 border border-gray-200">স্টক শেষ</span>
-          ) : (
-            <span className="bg-[var(--primary,#e11d48)] text-white border border-[var(--primary,#e11d48)]">নতুন</span>
-          )}
-        </span>
-        <button
-          type="button"
-          onClick={(e) => {
-            stop(e);
-            if (onToggleWishlist && activeVariant) onToggleWishlist(activeVariant.id);
-          }}
-          onKeyDown={stop}
-          className="absolute top-2 right-2 z-10 h-[34px] w-[34px] rounded-full bg-white/95 border border-gray-200 flex items-center justify-center shadow-sm active:scale-95 transition-transform"
-          aria-label={wished ? 'উইশলিস্ট থেকে সরান' : 'উইশলিস্টে যোগ করুন'}
-          aria-pressed={wished}
-        >
-          {wished ? <FaHeart className="text-red-500 text-[14px]" /> : <FaRegHeart className="text-gray-500 text-[14px]" />}
-        </button>
+
+        {onToggleWishlist && (
+          <button
+            type="button"
+            onClick={(e) => {
+              stop(e);
+              onToggleWishlist(activeVariant.id);
+            }}
+            onKeyDown={stop}
+            aria-label={wished ? 'উইশলিস্ট থেকে সরান' : 'উইশলিস্টে যোগ করুন'}
+            aria-pressed={wished}
+            className="absolute left-2.5 top-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-md transition-all duration-150 hover:scale-110 active:scale-90"
+          >
+            {wished ? (
+              <FaHeart className={`text-[15px] text-[${P}]`} />
+            ) : (
+              <FaRegHeart className="text-[15px] text-gray-600" />
+            )}
+          </button>
+        )}
       </div>
-      <div className="p-3 pb-4 flex flex-col gap-2 flex-1">
-        <h3 className="text-[14px] font-semibold text-[#17181c] line-clamp-2 min-h-[2.4rem] leading-tight break-words">
-          {product.name}
-        </h3>
-        {showVariants && (
-          mergedChips ? (
-            <div>
-              <div className="flex flex-wrap gap-1.5">
-                {mergedChips.map(({ key, val, variant }) => {
-                  const isSelected = attrsForAction[key] === val;
-                  const available = (variant.stock ?? 0) > 0 || isSelected;
-                  return (
-                    <button
-                      key={`${key}-${val}`}
-                      type="button"
-                      disabled={!available}
-                      aria-pressed={isSelected}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setSelected(normalizeAttributes(variant.attributes as unknown as Record<string, unknown>, product.name));
-                      }}
-                      onKeyDown={stop}
-                      className={`${chipBase} ${chipState(isSelected, available)} min-h-[30px] px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap`}
-                    >
-                      {val}
-                    </button>
-                  );
-                })}
-              </div>
+
+      {/* Content */}
+      <div className="mt-3 flex flex-1 flex-col gap-2.5 px-0.5">
+        <NameWithTooltip />
+
+        {showVariants &&
+          (mergedChips ? (
+            <div className="flex flex-wrap gap-2">
+              {mergedChips.map(({ key, val, variant }) => {
+                const isSelected = attrsForAction[key] === val;
+                const available = (variant.stock ?? 0) > 0 || isSelected;
+                return (
+                  <button
+                    key={`${key}-${val}`}
+                    type="button"
+                    disabled={!available}
+                    aria-pressed={isSelected}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setSelected(normalizeAttributes(variant.attributes as unknown as Record<string, unknown>, product.name));
+                    }}
+                    onKeyDown={stop}
+                    className={chipClass(isSelected, available)}
+                  >
+                    {val}
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <div className="space-y-1.5">
               {visibleKeys.map((key) => (
-                <div key={key} className="flex items-start gap-2 min-w-0">
-                  <span className="text-[11px] text-gray-500 shrink-0 min-w-[2.5rem] pt-1.5">{key}</span>
-                  <div className="flex flex-wrap gap-1.5 min-w-0">
+                <div key={key} className="flex min-w-0 items-start gap-2">
+                  <span className="min-w-[2.5rem] shrink-0 pt-2 text-[11px] text-gray-500">{key}</span>
+                  <div className="flex min-w-0 flex-wrap gap-2">
                     {(options[key] || []).map((val) => {
                       const isSelected = selected[key] === val;
                       const available = isOptionAvailable(variants, selected, key, val, product.name);
@@ -273,7 +362,7 @@ function ProductCard({
                           aria-pressed={isSelected}
                           onClick={(e) => handleSelect(key, val, e)}
                           onKeyDown={stop}
-                          className={`${chipBase} ${chipState(isSelected, available)} min-h-[28px] px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap`}
+                          className={chipClass(isSelected, available)}
                         >
                           {val}
                         </button>
@@ -283,30 +372,38 @@ function ProductCard({
                 </div>
               ))}
             </div>
-          )
-        )}
-        <div className="mt-auto flex items-baseline justify-between gap-2 min-w-0">
-          <div className="flex items-baseline flex-wrap gap-x-1.5 min-w-0">
-            <span className="text-[18px] font-semibold text-[#17181c] leading-none">৳{isPreOrder && preOrderPrice != null ? preOrderPrice : activeVariant.price}</span>
-            {hasCompare && (
-              <span className="text-[13px] text-gray-500 line-through">৳{activeVariant.compareAtPrice}</span>
+          ))}
+
+        {/* Price row */}
+        <div className="mt-auto flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <span className={`text-[22px] font-extrabold leading-none text-[${P}]`}>৳{price}</span>
+
+          {hasCompare && (
+            <span className="text-[14px] font-medium text-gray-400 line-through decoration-gray-400/70">
+              ৳{activeVariant.compareAtPrice}
+            </span>
+          )}
+
+          <div className="ml-auto flex items-center gap-1.5">
+            {discount > 0 && !outOfStock && (
+              <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold leading-none text-[${P}] ${tint}`}>
+                -{discount}%
+              </span>
             )}
+            {statusPill}
           </div>
-          <span className={`text-[11px] font-semibold shrink-0 ${stockColor}`}>{stockLabel}</span>
         </div>
+
+        {/* Actions */}
         {isPreOrder ? (
           <button
             type="button"
             disabled={buttonDisabled}
             onClick={handleAddToCart}
             onKeyDown={stop}
-            className="w-full h-[42px] flex items-center justify-center gap-1.5 text-[14px] font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 active:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
+            className={`${btnPrimary} w-full`}
           >
-            {adding ? (
-              <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" aria-hidden="true" />
-            ) : (
-              <FaBolt className="text-[13px]" />
-            )}
+            {adding ? <Spinner /> : <FaBolt className="text-[13px] transition-transform duration-200 group-hover/btn:scale-125" />}
             প্রি-অর্ডার করুন
           </button>
         ) : (
@@ -316,26 +413,28 @@ function ProductCard({
               disabled={buttonDisabled}
               onClick={handleAddToCart}
               onKeyDown={stop}
-              className="h-[42px] flex items-center justify-center gap-1.5 text-[14px] font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--primary,#e11d48)]"
+              aria-label="কার্টে যোগ করুন"
+              className={btnOutline}
             >
               {adding ? (
-                <span className="h-4 w-4 rounded-full border-2 border-gray-500 border-t-transparent animate-spin" aria-hidden="true" />
+                <Spinner dark />
               ) : (
-                <FaShoppingCart className="text-[13px]" />
+                <MdAddShoppingCart className="text-[19px] transition-transform duration-200 group-hover/btn:-rotate-12 group-hover/btn:scale-110" />
               )}
               কার্ট
             </button>
             <button
               type="button"
-              disabled={buttonDisabled}
+              disabled={outOfStock}
               onClick={(e) => {
                 stop(e);
-                if (onBuyNow && activeVariant) onBuyNow(activeVariant.id, 1, attrsForAction);
+                if (onBuyNow) onBuyNow(activeVariant.id, 1, attrsForAction);
               }}
               onKeyDown={stop}
-              className="h-[42px] flex items-center justify-center gap-1.5 text-[14px] font-bold rounded-lg bg-[var(--primary,#e11d48)] text-white hover:bg-[var(--primary-dark,#be123c)] active:bg-[var(--primary-dark,#be123c)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--primary,#e11d48)]"
+              className={btnPrimary}
             >
-              <FaBolt className="text-[13px]" /> অর্ডার করুন
+              <FaBolt className="text-[13px] transition-transform duration-200 group-hover/btn:scale-125 group-hover/btn:rotate-12" />
+              অর্ডার করুন
             </button>
           </div>
         )}

@@ -22,7 +22,7 @@ export default function CategoryNavStrip({
   return (
     <nav aria-label="ক্যাটাগরি" className="border-b border-[#e7e8ec] bg-white">
       {/* first:ml-auto / last:mr-auto = "safe center": centred when it fits, scrollable from the left when it overflows */}
-      <div className="mx-auto flex h-12 max-w-[1280px] items-center gap-8 overflow-x-auto whitespace-nowrap px-5 text-[15px] font-semibold scrollbar-hide md:gap-[34px]">
+      <div className="mx-auto flex h-14 max-w-[1280px] items-center gap-3 overflow-x-auto whitespace-nowrap px-5 text-[15px] font-semibold scrollbar-hide md:gap-4">
         {list.map((c) => {
           const active = !isPlaceholder && selectedCategory === c.id;
           return (
@@ -31,13 +31,15 @@ export default function CategoryNavStrip({
               type="button"
               onClick={() => !isPlaceholder && onSelectCategory(c.id)}
               aria-current={active ? "true" : undefined}
-              className="relative flex h-full flex-shrink-0 items-center transition-colors first:ml-auto last:mr-auto hover:opacity-80"
-              style={{ color: active ? primary : "#17181c" }}
+              className={`relative flex h-10 flex-shrink-0 items-center rounded-lg px-4 transition-all duration-200 ease-in-out first:ml-auto last:mr-auto active:scale-95 ${
+                active
+                  ? "border border-red-500 bg-red-50/60 text-red-600 shadow-sm"
+                  : "border border-transparent text-orange-600 hover:border-orange-500 hover:bg-orange-50/40"
+              }`}
             >
-              {c.name}
-              {active && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full" style={{ background: primary }} />
-              )}
+              <span className="transition-transform duration-200 hover:scale-[1.02]">
+                {c.name}
+              </span>
             </button>
           );
         })}

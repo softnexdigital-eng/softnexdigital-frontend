@@ -1864,542 +1864,546 @@ export default function PublicLandingPage() {
         primary={PRIMARY}
       />
 
-      <div className="max-w-[1590px] mx-auto  sm:px-6 py-0.5">
-        {/* ===== হোম মোড – Hero banner, categories, products, and reviews ===== */}
-        {viewMode === "home" && (
-          <>
-            {/* Category nav strip */}
-            {categories.length > 0 && (
-              <CategoryNavStrip
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onSelectCategory={(id) => {
-                  setSelectedCategory(id);
-                  setSelectedSubcategory(null);
-                }}
-                primary={PRIMARY}
-              />
-            )}
-            <HeroBanner
-              banners={(data.banners || []).map((banner) => ({
-                image: banner.imageUrl,
-                link: banner.linkUrl,
-                alt: banner.title,
-                categoryId: banner.categoryId,
-              }))}
-              featured={allProducts}
-              onOpenDetails={(productId, variantId) => openDetail(productId, variantId)}
-              onBannerClick={(banner) => {
-                if (banner.categoryId) {
-                  setSelectedCategory(banner.categoryId);
-                  setSelectedSubcategory(null);
-                  const sp = new URLSearchParams(searchParams.toString());
-                  sp.delete("variant");
-                  router.replace(sp.toString() ? `/${storeSlug}?${sp.toString()}` : `/${storeSlug}`, { scroll: false });
-                } else if (banner.link) {
-                  window.open(banner.link, "_blank", "noopener,noreferrer");
-                }
-              }}
-              primary={PRIMARY}
-              placeholder
-            />
-
-            <CategoryTiles
-              categories={categories.slice(0, 7).map((category) => ({
-                id: category.id,
-                name: category.name,
-                image: category.image || category.imageUrl || category.thumbnail || null,
-              }))}
-              onSelectCategory={(id) => {
-                setSelectedCategory(selectedCategory === id ? null : id);
-                setSelectedSubcategory(null);
-              }}
-              placeholder
-            />
-
-            {/* <AnimSection delay={90}>
-              <BestProductsSection
-                products={allProducts}
-                wishlistIds={wishlistIds}
-                addToCart={addToCart}
-                onOpenDetails={(productId, variantId) => {
-                  const p = allProducts.find((x) => x.id === productId);
-                  if (p?.id) trackMetaEvent("InitiateCheckout", [{ productId: p.id, quantity: 1 }]);
-                  openDetail(productId, variantId);
-                }}
-                toggleWishlist={toggleWishlist}
-                primary={PRIMARY}
-              />
-            </AnimSection> */}
-
-           
-
-            {/* সব পণ্য section header */}
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-base font-bold text-[#17181c]">সব পণ্য</h2>
-              <a href="#" className="text-[13px] font-semibold text-[#e11d48] uppercase tracking-wider">
-                ফিল্টার ও সর্ট
-              </a>
-            </div>
-
-            <AnimSection delay={90}>
-              <VariantsGrid
-                products={filteredProducts}
-                wishlistIds={wishlistIds}
-                cartLoading={cartLoadingItems.size > 0}
-                addToCart={addToCart}
-                onOpenDetails={(productId, variantId) => {
-                  const p = allProducts.find((x) => x.id === productId);
-                  if (p?.id) trackMetaEvent("InitiateCheckout", [{ productId: p.id, quantity: 1 }]);
-                  openDetail(productId, variantId);
-                }}
-                toggleWishlist={toggleWishlist}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                activeFiltersCount={activeFiltersCount}
-                clearFilters={clearFilters}
-                primary={PRIMARY}
-              />
-            </AnimSection>
-
-             <AnimSection delay={120}>
-              <PreOrderSection
-                products={allProducts}
-                wishlistIds={wishlistIds}
-                addToCart={addToCart}
-                onOpenDetails={(productId, variantId) => {
-                  const p = allProducts.find((x) => x.id === productId);
-                  if (p?.id) trackMetaEvent("InitiateCheckout", [{ productId: p.id, quantity: 1 }]);
-                  openDetail(productId, variantId);
-                }}
-                toggleWishlist={toggleWishlist}
-                primary={PRIMARY}
-              />
-            </AnimSection>
-
-            {/* গ্রাহকের রিভিউ – VariantsGrid-এর নিচে */}
-            {!reviewsLoading && (
-              <AnimSection delay={120}>
-                <ReviewsSection
-                  reviews={reviews}
-                  reviewsLoading={reviewsLoading}
-                  avgRating={avgRating}
-                  showReviewForm={showReviewForm}
-                  setShowReviewForm={setShowReviewForm}
-                  editingReviewId={editingReviewId}
-                  reviewName={reviewName}
-                  reviewLocation={reviewLocation}
-                  reviewText={reviewText}
-                  reviewStars={reviewStars}
-                  reviewPhone={reviewPhone}
-                  reviewSubmitting={reviewSubmitting}
-                  setEditingReviewId={setEditingReviewId}
-                  setReviewName={setReviewName}
-                  setReviewLocation={setReviewLocation}
-                  setReviewText={setReviewText}
-                  setReviewStars={setReviewStars}
-                  setReviewPhone={setReviewPhone}
-                  onReviewSubmit={handleReviewSubmit}
-                  onEditReview={handleEditReview}
-                  onDeleteReview={handleDeleteReview}
-                  primary={PRIMARY}
-                />
-              </AnimSection>
-            )}
-          </>
+      <div className="max-w-[1590px] mx-auto sm:px-6 py-3 lg:py-4 pb-10 lg:pb-14">
+  {/* ===== হোম মোড – Hero banner, categories, products, and reviews ===== */}
+  {viewMode === "home" && (
+    <div className="flex flex-col gap-8 lg:gap-12">
+      {/* First-screen group: strip + banner + category + আজকের অফার (tight) */}
+      <div className="flex flex-col gap-5 lg:gap-6">
+        {categories.length > 1 && (
+          <CategoryNavStrip
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={(id) => {
+              setSelectedCategory(id);
+              setSelectedSubcategory(null);
+            }}
+            primary={PRIMARY}
+          />
         )}
 
-        {/* ===== ডিটেইল মোড – Hero + OrderForm + Reviews + FAQ + Contact ===== */}
-        {viewMode === "detail" && (
-          <>
-            <div className="flex justify-start mb-4">
-              <button
-                onClick={goToHome}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-sm transition-colors"
-              >
-                <FaChevronLeft size={12} />
-                পণ্যের তালিকায় ফিরে যান
-              </button>
-            </div>
+        <HeroBanner
+          banners={(data.banners || []).map((banner) => ({
+            image: banner.imageUrl,
+            link: banner.linkUrl,
+            alt: banner.title,
+            categoryId: banner.categoryId,
+          }))}
+          featured={allProducts}
+          onOpenDetails={(productId, variantId) => openDetail(productId, variantId)}
+          onBannerClick={(banner) => {
+            if (banner.categoryId) {
+              setSelectedCategory(banner.categoryId);
+              setSelectedSubcategory(null);
+              const sp = new URLSearchParams(searchParams.toString());
+              sp.delete("variant");
+              router.replace(sp.toString() ? `/${storeSlug}?${sp.toString()}` : `/${storeSlug}`, { scroll: false });
+            } else if (banner.link) {
+              window.open(banner.link, "_blank", "noopener,noreferrer");
+            }
+          }}
+          primary={PRIMARY}
+          placeholder
+        />
 
-            <AnimSection>
-              <div id="hero-section">
-                <HeroSection
-                  selectedVariant={selectedVariant}
-                  selectedProduct={selectedProduct}
-                  data={data as unknown as Parameters<typeof HeroSection>[0]["data"]}
-                  variants={variants}
-                  productImage={productImage}
-                  allImages={allImages}
-                  activeGallery={activeGallery}
-                  setActiveGallery={setActiveGallery}
-                  quantity={quantity}
-                  setQuantity={setQuantity}
-                  roundToStep={roundToStep}
-                  QUANTITY_STEP={QUANTITY_STEP}
-                  avgRating={avgRating}
-                  reviewsCount={reviewsCount}
-                  trustBar={trustBar}
-                  features={features}
-                  variantDetails={variantDetails}
-                  badge={badge}
-                  tagline={tagline}
-                  addToCart={addToCart}
-                  onInitiateCheckout={(productId, checkoutQuantity) =>
-                    initiateCheckout([{ productId, quantity: checkoutQuantity }])
-                  }
-                  updateVariantAndProduct={updateVariantAndProduct}
-                  switchVariant={switchVariant}
-                  toggleWishlist={toggleWishlist}
-                  cartLoadingItems={cartLoadingItems}
-                  wishlistIds={wishlistIds}
-                  isFreeDelivery={isFreeDelivery}
-                  formatBanglaNum={formatBanglaNum}
-                  formatBanglaDate={formatBanglaDate}
-                  bdDateObj={bdDateObj}
-                  primary={PRIMARY}
-                  primaryDark={PRIMARY_DARK}
-                  primaryMuted={PRIMARY_MUTED}
-                  primaryLight={PRIMARY_LIGHT}
-                  orderNowLink={orderNowLink}
-                  whatsappLink={whatsappLink}
-                  whatsappVariantLink={whatsappVariantLink}
-                  heroWishlistBtnClass=""
-                  onColorChange={setCurrentColor}
-                  onVariantAttrsChange={setSelectedVariantAttrs}
-                  onVariantChange={syncHeroVariant}
-                />
-              </div>
+        <CategoryTiles
+          categories={categories.slice(0, 7).map((category) => ({
+            id: category.id,
+            name: category.name,
+            image: category.image || category.imageUrl || category.thumbnail || null,
+          }))}
+          onSelectCategory={(id) => {
+            setSelectedCategory(selectedCategory === id ? null : id);
+            setSelectedSubcategory(null);
+          }}
+          placeholder
+        />
+
+        {/* <AnimSection delay={90}>
+          <BestProductsSection
+            products={allProducts}
+            wishlistIds={wishlistIds}
+            addToCart={addToCart}
+            onOpenDetails={(productId, variantId) => {
+              const p = allProducts.find((x) => x.id === productId);
+              if (p?.id) trackMetaEvent("InitiateCheckout", [{ productId: p.id, quantity: 1 }]);
+              openDetail(productId, variantId);
+            }}
+            toggleWishlist={toggleWishlist}
+            primary={PRIMARY}
+          />
+        </AnimSection> */}
+
+        {/* পণ্যের গ্রিড (heading + filter toolbar VariantsGrid-এর ভেতরেই আছে) */}
+        <AnimSection delay={90}>
+          <VariantsGrid
+            products={filteredProducts}
+            wishlistIds={wishlistIds}
+            cartLoading={cartLoadingItems.size > 0}
+            addToCart={addToCart}
+            onOpenDetails={(productId, variantId) => {
+              const p = allProducts.find((x) => x.id === productId);
+              if (p?.id) trackMetaEvent("InitiateCheckout", [{ productId: p.id, quantity: 1 }]);
+              openDetail(productId, variantId);
+            }}
+            toggleWishlist={toggleWishlist}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            activeFiltersCount={activeFiltersCount}
+            clearFilters={clearFilters}
+            primary={PRIMARY}
+          />
+        </AnimSection>
+      </div>
+
+      {/* Lower group: pre-order + reviews (বড় gap) */}
+      <div className="flex flex-col gap-10 lg:gap-12">
+        <AnimSection delay={120}>
+          <PreOrderSection
+            products={allProducts}
+            wishlistIds={wishlistIds}
+            addToCart={addToCart}
+            onOpenDetails={(productId, variantId) => {
+              const p = allProducts.find((x) => x.id === productId);
+              if (p?.id) trackMetaEvent("InitiateCheckout", [{ productId: p.id, quantity: 1 }]);
+              openDetail(productId, variantId);
+            }}
+            toggleWishlist={toggleWishlist}
+            primary={PRIMARY}
+          />
+        </AnimSection>
+
+        {/* গ্রাহকের রিভিউ */}
+        {!reviewsLoading && (
+          <AnimSection delay={120}>
+            <ReviewsSection
+              reviews={reviews}
+              reviewsLoading={reviewsLoading}
+              avgRating={avgRating}
+              showReviewForm={showReviewForm}
+              setShowReviewForm={setShowReviewForm}
+              editingReviewId={editingReviewId}
+              reviewName={reviewName}
+              reviewLocation={reviewLocation}
+              reviewText={reviewText}
+              reviewStars={reviewStars}
+              reviewPhone={reviewPhone}
+              reviewSubmitting={reviewSubmitting}
+              setEditingReviewId={setEditingReviewId}
+              setReviewName={setReviewName}
+              setReviewLocation={setReviewLocation}
+              setReviewText={setReviewText}
+              setReviewStars={setReviewStars}
+              setReviewPhone={setReviewPhone}
+              onReviewSubmit={handleReviewSubmit}
+              onEditReview={handleEditReview}
+              onDeleteReview={handleDeleteReview}
+              primary={PRIMARY}
+            />
+          </AnimSection>
+        )}
+      </div>
+    </div>
+  )}
+
+  {/* ===== ডিটেইল মোড – Hero + OrderForm + Reviews + FAQ + Contact ===== */}
+  {viewMode === "detail" && (
+    <div className="flex flex-col gap-10 lg:gap-12">
+      {/* Back button + Hero (কাছাকাছি) */}
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-start px-3 sm:px-0">
+          <button
+            onClick={goToHome}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-sm transition-colors"
+          >
+            <FaChevronLeft size={12} />
+            পণ্যের তালিকায় ফিরে যান
+          </button>
+        </div>
+
+        <AnimSection>
+          <div id="hero-section">
+            <HeroSection
+              selectedVariant={selectedVariant}
+              selectedProduct={selectedProduct}
+              data={data as unknown as Parameters<typeof HeroSection>[0]["data"]}
+              variants={variants}
+              productImage={productImage}
+              allImages={allImages}
+              activeGallery={activeGallery}
+              setActiveGallery={setActiveGallery}
+              quantity={quantity}
+              setQuantity={setQuantity}
+              roundToStep={roundToStep}
+              QUANTITY_STEP={QUANTITY_STEP}
+              avgRating={avgRating}
+              reviewsCount={reviewsCount}
+              trustBar={trustBar}
+              features={features}
+              variantDetails={variantDetails}
+              badge={badge}
+              tagline={tagline}
+              addToCart={addToCart}
+              onInitiateCheckout={(productId, checkoutQuantity) =>
+                initiateCheckout([{ productId, quantity: checkoutQuantity }])
+              }
+              updateVariantAndProduct={updateVariantAndProduct}
+              switchVariant={switchVariant}
+              toggleWishlist={toggleWishlist}
+              cartLoadingItems={cartLoadingItems}
+              wishlistIds={wishlistIds}
+              isFreeDelivery={isFreeDelivery}
+              formatBanglaNum={formatBanglaNum}
+              formatBanglaDate={formatBanglaDate}
+              bdDateObj={bdDateObj}
+              primary={PRIMARY}
+              primaryDark={PRIMARY_DARK}
+              primaryMuted={PRIMARY_MUTED}
+              primaryLight={PRIMARY_LIGHT}
+              orderNowLink={orderNowLink}
+              whatsappLink={whatsappLink}
+              whatsappVariantLink={whatsappVariantLink}
+              heroWishlistBtnClass=""
+              onColorChange={setCurrentColor}
+              onVariantAttrsChange={setSelectedVariantAttrs}
+              onVariantChange={syncHeroVariant}
+            />
+          </div>
+        </AnimSection>
+      </div>
+
+      {/* Order form + summary */}
+      <div className="relative" id="order-form">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
+          <div className="lg:col-span-3">
+            <AnimSection delay={160}>
+              <OrderForm
+                isCartOrder={isCartOrder}
+                cartData={cartData}
+                selectedCartItems={selectedCartItems}
+                setSelectedCartItems={setSelectedCartItems}
+                selectedVariantAttrs={selectedVariantAttrs}
+                selectedVariant={selectedVariant}
+                quantity={quantity}
+                setQuantity={setQuantity}
+                roundToStep={roundToStep}
+                QUANTITY_STEP={QUANTITY_STEP}
+                variants={variants}
+                couponCode={couponCode}
+                setCouponCode={setCouponCode}
+                appliedDiscount={appliedDiscount}
+                validatingCoupon={validatingCoupon}
+                validateAndApplyCoupon={validateAndApplyCoupon}
+                orderLoading={orderLoading}
+                cartOrderProcessing={cartOrderProcessing}
+                onSubmitOrder={onSubmitOrder}
+                onCartOrderSubmit={handleCartOrderSubmit}
+                register={register}
+                errors={errors}
+                handleSubmit={handleSubmit}
+                switchToSingleProductOrder={switchToSingleProductOrder}
+                reset={reset}
+                primary={PRIMARY}
+                primaryDark={PRIMARY_DARK}
+                primaryMuted={PRIMARY_MUTED}
+                isFreeDelivery={isFreeDelivery}
+                deliveryCharge={deliveryCharge}
+                cartItemVariants={cartItemVariants}
+                selectedItemAttrs={selectedItemAttrs}
+                setSelectedItemAttrs={setSelectedItemAttrs}
+                updateCartItemVariant={updateCartItemVariant}
+                allVariants={variants}
+              />
             </AnimSection>
+          </div>
 
-            <div className="relative" id="order-form">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <div className="lg:col-span-3">
-                  <AnimSection delay={160}>
-                    <OrderForm
-                      isCartOrder={isCartOrder}
-                      cartData={cartData}
-                      selectedCartItems={selectedCartItems}
-                      setSelectedCartItems={setSelectedCartItems}
-                      selectedVariantAttrs={selectedVariantAttrs}
-                      selectedVariant={selectedVariant}
-                      quantity={quantity}
-                      setQuantity={setQuantity}
-                      roundToStep={roundToStep}
-                      QUANTITY_STEP={QUANTITY_STEP}
-                      variants={variants}
-                      couponCode={couponCode}
-                      setCouponCode={setCouponCode}
-                      appliedDiscount={appliedDiscount}
-                      validatingCoupon={validatingCoupon}
-                      validateAndApplyCoupon={validateAndApplyCoupon}
-                      orderLoading={orderLoading}
-                      cartOrderProcessing={cartOrderProcessing}
-                      onSubmitOrder={onSubmitOrder}
-                      onCartOrderSubmit={handleCartOrderSubmit}
-                      register={register}
-                      errors={errors}
-                      handleSubmit={handleSubmit}
-                      switchToSingleProductOrder={switchToSingleProductOrder}
-                      reset={reset}
-                      primary={PRIMARY}
-                      primaryDark={PRIMARY_DARK}
-                      primaryMuted={PRIMARY_MUTED}
-                      isFreeDelivery={isFreeDelivery}
-                      deliveryCharge={deliveryCharge}
-                      cartItemVariants={cartItemVariants}
-                      selectedItemAttrs={selectedItemAttrs}
-                      setSelectedItemAttrs={setSelectedItemAttrs}
-                      updateCartItemVariant={updateCartItemVariant}
-                      allVariants={variants}
-                    />
-                  </AnimSection>
+          <div className="hidden lg:block lg:col-span-2">
+            <div className="sticky top-[113px]">
+              <div className="bg-white border border-gray-200 rounded-sm shadow-md overflow-hidden">
+                <div
+                  className="p-4 border-b"
+                  style={{ background: PRIMARY_MUTED }}
+                >
+                  <h3 className="font-black text-gray-800 text-sm flex items-center gap-2">
+                    <FaShoppingCart style={{ color: PRIMARY }} />
+                    {isCartOrder
+                      ? "কার্টের পণ্য সমূহ"
+                      : "অর্ডার সারসংক্ষেপ"}
+                  </h3>
                 </div>
-
-                <div className="hidden lg:block lg:col-span-2">
-                  <div className="sticky top-[113px]">
-                    <div className="bg-white border border-gray-200 rounded-sm shadow-md overflow-hidden">
-                      <div
-                        className="p-4 border-b"
-                        style={{ background: PRIMARY_MUTED }}
-                      >
-                        <h3 className="font-black text-gray-800 text-sm flex items-center gap-2">
-                          <FaShoppingCart style={{ color: PRIMARY }} />
-                          {isCartOrder
-                            ? "কার্টের পণ্য সমূহ"
-                            : "অর্ডার সারসংক্ষেপ"}
-                        </h3>
-                      </div>
-                      <div className="p-5">
-                        {isCartOrder &&
-                        cartData?.items &&
-                        cartData.items.length > 0 ? (
-                          <div className="space-y-3">
-                            {cartData.items
-                              .filter((ci: any) =>
-                                selectedCartItems.has(ci.variant?.id),
-                              )
-                              .map((cartItem: any, idx: number) => {
-                                const v = cartItem.variant;
-                                const selAttrs =
-                                  selectedItemAttrs?.[cartItem.id] || {};
-                                const attrLabel =
-                                  Object.keys(selAttrs).length > 0
-                                    ? Object.values(selAttrs).join(" / ")
-                                    : formatVariantAttrs(v?.attributes || {});
-                                const itemTotal =
-                                  (v?.price || 0) * cartItem.quantity;
-                                return (
+                <div className="p-5">
+                  {isCartOrder &&
+                  cartData?.items &&
+                  cartData.items.length > 0 ? (
+                    <div className="space-y-3">
+                      {cartData.items
+                        .filter((ci: any) =>
+                          selectedCartItems.has(ci.variant?.id),
+                        )
+                        .map((cartItem: any, idx: number) => {
+                          const v = cartItem.variant;
+                          const selAttrs =
+                            selectedItemAttrs?.[cartItem.id] || {};
+                          const attrLabel =
+                            Object.keys(selAttrs).length > 0
+                              ? Object.values(selAttrs).join(" / ")
+                              : formatVariantAttrs(v?.attributes || {});
+                          const itemTotal =
+                            (v?.price || 0) * cartItem.quantity;
+                          return (
+                            <div
+                              key={idx}
+                              style={{ border: `1px solid ${PRIMARY}20`, background: `${PRIMARY}03` }}
+                              className="group relative overflow-hidden flex items-start gap-3 rounded-sm p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                            >
+                              <div className="relative shrink-0">
+                                {v?.image ? (
+                                  <img
+                                    src={v.image}
+                                    alt={v?.product?.name || "Product"}
+                                    className="h-16 w-16 object-cover rounded-sm border"
+                                    style={{ borderColor: `${PRIMARY}20` }}
+                                  />
+                                ) : (
                                   <div
-                                    key={idx}
-                                    style={{ border: `1px solid ${PRIMARY}20`, background: `${PRIMARY}03` }}
-                                    className="group relative overflow-hidden flex items-start gap-3 rounded-sm p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                                    className="flex h-16 w-16 items-center justify-center rounded-sm text-gray-300"
+                                    style={{ border: `1px solid ${PRIMARY}20`, background: `${PRIMARY}06` }}
                                   >
-                                    <div className="relative shrink-0">
-                                      {v?.image ? (
-                                        <img
-                                          src={v.image}
-                                          alt={v?.product?.name || "Product"}
-                                          className="h-16 w-16 object-cover rounded-sm border"
-                                          style={{ borderColor: `${PRIMARY}20` }}
-                                        />
-                                      ) : (
-                                        <div
-                                          className="flex h-16 w-16 items-center justify-center rounded-sm text-gray-300"
-                                          style={{ border: `1px solid ${PRIMARY}20`, background: `${PRIMARY}06` }}
-                                        >
-                                          <FiPackage className="h-6 w-6" />
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    <div className="min-w-0 flex-1">
-                                      <div className="flex items-start justify-between gap-2">
-                                        <div className="min-w-0 flex-1">
-                                          <h4 className="text-sm font-bold text-gray-800 line-clamp-2">
-                                            {v?.product?.name || "পণ্য"}
-                                          </h4>
-                                          {attrLabel && (
-                                            <div className="mt-1">
-                                              <span
-                                                className="inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-semibold"
-                                                style={{ border: `1px solid ${PRIMARY}30`, background: `${PRIMARY}10`, color: PRIMARY }}
-                                              >
-                                                <FiTag className="h-3 w-3" />
-                                                {attrLabel}
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="text-right shrink-0">
-                                          <p className="text-lg font-extrabold tracking-tight text-red-600 tabular-nums">
-                                            ৳{itemTotal}
-                                          </p>
-                                        </div>
-                                      </div>
-                                      <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
-                                        <span className="font-semibold text-gray-500">
-                                          ৳{v?.price}/unit
-                                        </span>
-                                        <span className="text-gray-300">•</span>
-                                        <span className="flex items-center gap-1 text-gray-500">
-                                          Qty: {cartItem.quantity}
-                                        </span>
-                                      </div>
-                                      <div className="mt-2 flex items-center justify-between border-t pt-2" style={{ borderColor: `${PRIMARY}15` }}>
-                                        <span
-                                          className="inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-[10px] font-semibold"
-                                          style={{ border: `1px solid #d1fae5`, background: '#ecfdf5', color: '#065f46' }}
-                                        >
-                                          <span className="h-1.5 w-1.5 rounded-sm bg-emerald-500" />
-                                          স্টকে আছে
-                                        </span>
-                                        <button className="flex h-7 w-7 items-center justify-center rounded-sm text-gray-400 transition-all duration-200 hover:bg-red-50 hover:text-red-500">
-                                          <FiX className="h-4 w-4" />
-                                        </button>
-                                      </div>
-                                    </div>
+                                    <FiPackage className="h-6 w-6" />
                                   </div>
-                                );
-                              })}
-                            <div className="border-t pt-2">
-                              <div className="flex justify-between text-sm">
-                                <span>সাবটোটাল</span>
-                                <span className="font-bold">
-                                  ৳
-                                  {cartData.items.reduce(
-                                    (sum: number, ci: any) =>
-                                      selectedCartItems.has(ci.variant?.id)
-                                        ? sum +
-                                          (ci.variant?.price || 0) *
-                                            ci.quantity
-                                        : sum,
-                                    0,
-                                  )}
-                                </span>
-                              </div>
-                              <div className="flex justify-between text-sm mt-1">
-                                <span>ডেলিভারি চার্জ</span>
-                                <span className="font-bold text-red-600">
-                                  {isFreeDelivery
-                                    ? "ফ্রি"
-                                    : `৳${deliveryCharge}`}
-                                </span>
-                              </div>
-                              {appliedDiscount > 0 && (
-                                <div className="flex justify-between text-sm mt-1 text-red-600">
-                                  <span>ছাড় (কুপন)</span>
-                                  <span>- ৳{appliedDiscount}</span>
-                                </div>
-                              )}
-                              <div className="flex justify-between text-lg font-black mt-3 pt-2 border-t">
-                                <span>সর্বমোট</span>
-                                <span className="text-red-600">
-                                  ৳
-                                  {cartData.items.reduce(
-                                    (sum: number, ci: any) =>
-                                      selectedCartItems.has(ci.variant?.id)
-                                        ? sum +
-                                          (ci.variant?.price || 0) *
-                                            ci.quantity
-                                        : sum,
-                                    0,
-                                  ) +
-                                    (isFreeDelivery ? 0 : deliveryCharge) -
-                                    appliedDiscount}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ) : selectedVariant ? (
-                          <div className="space-y-4">
-                            <div className="flex gap-3">
-                              {selectedVariant.image && (
-                                <img
-                                  src={selectedVariant.image}
-                                  alt=""
-                                  className="w-16 h-16 object-cover rounded-sm border border-gray-100"
-                                />
-                              )}
-                              <div>
-                                <div className="font-bold text-gray-800">
-                                  {selectedProduct?.name || data.product?.name}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {Object.values(selectedVariantAttrs).join(" / ")}
-                                </div>
-                                <div className="text-lg font-black text-red-600">
-                                  ৳{selectedVariant.price}
-                                </div>
-                                {selectedVariant.compareAtPrice && selectedVariant.compareAtPrice > selectedVariant.price && (
-                                  <div className="text-xs text-gray-400 line-through">৳{selectedVariant.compareAtPrice}</div>
                                 )}
-                                <div className="text-xs text-gray-500">স্টক: {selectedVariant.stock} · SKU: {selectedVariant.sku}</div>
                               </div>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span>পরিমাণ</span>
-                              <span className="font-bold">{quantity}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span>মূল্য</span>
-                              <span className="font-bold">
-                                ৳{(selectedVariant.price * quantity).toFixed(0)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span>ডেলিভারি চার্জ</span>
-                              <span className="font-bold text-red-600">
-                                {isFreeDelivery ? "ফ্রি" : `৳${deliveryCharge}`}
-                              </span>
-                            </div>
-                            {appliedDiscount > 0 && (
-                              <div className="flex justify-between text-sm text-red-600">
-                                <span>ছাড় (কুপন)</span>
-                                <span>- ৳{appliedDiscount}</span>
-                              </div>
-                            )}
-                            <div className="border-t pt-3 mt-2">
-                              <div className="flex justify-between text-lg font-black">
-                                <span>সর্বমোট</span>
-                                <span className="text-red-600">
-                                  ৳{(selectedVariant.price * quantity + (isFreeDelivery ? 0 : deliveryCharge) - appliedDiscount).toFixed(0)}
-                                </span>
-                              </div>
-                              {!isFreeDelivery && (
-                                <div className="text-xs text-center mt-2 text-red-600 bg-white p-2 rounded-sm">
-                                  🎁 আজই অর্ডার করুন, ফ্রি ডেলিভারি পান!
+
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0 flex-1">
+                                    <h4 className="text-sm font-bold text-gray-800 line-clamp-2">
+                                      {v?.product?.name || "পণ্য"}
+                                    </h4>
+                                    {attrLabel && (
+                                      <div className="mt-1">
+                                        <span
+                                          className="inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-semibold"
+                                          style={{ border: `1px solid ${PRIMARY}30`, background: `${PRIMARY}10`, color: PRIMARY }}
+                                        >
+                                          <FiTag className="h-3 w-3" />
+                                          {attrLabel}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-lg font-extrabold tracking-tight text-red-600 tabular-nums">
+                                      ৳{itemTotal}
+                                    </p>
+                                  </div>
                                 </div>
-                              )}
+                                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+                                  <span className="font-semibold text-gray-500">
+                                    ৳{v?.price}/unit
+                                  </span>
+                                  <span className="text-gray-300">•</span>
+                                  <span className="flex items-center gap-1 text-gray-500">
+                                    Qty: {cartItem.quantity}
+                                  </span>
+                                </div>
+                                <div className="mt-2 flex items-center justify-between border-t pt-2" style={{ borderColor: `${PRIMARY}15` }}>
+                                  <span
+                                    className="inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-[10px] font-semibold"
+                                    style={{ border: `1px solid #d1fae5`, background: '#ecfdf5', color: '#065f46' }}
+                                  >
+                                    <span className="h-1.5 w-1.5 rounded-sm bg-emerald-500" />
+                                    স্টকে আছে
+                                  </span>
+                                  <button className="flex h-7 w-7 items-center justify-center rounded-sm text-gray-400 transition-all duration-200 hover:bg-red-50 hover:text-red-500">
+                                    <FiX className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
                             </div>
+                          );
+                        })}
+                      <div className="border-t pt-2">
+                        <div className="flex justify-between text-sm">
+                          <span>সাবটোটাল</span>
+                          <span className="font-bold">
+                            ৳
+                            {cartData.items.reduce(
+                              (sum: number, ci: any) =>
+                                selectedCartItems.has(ci.variant?.id)
+                                  ? sum +
+                                    (ci.variant?.price || 0) *
+                                      ci.quantity
+                                  : sum,
+                              0,
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm mt-1">
+                          <span>ডেলিভারি চার্জ</span>
+                          <span className="font-bold text-red-600">
+                            {isFreeDelivery
+                              ? "ফ্রি"
+                              : `৳${deliveryCharge}`}
+                          </span>
+                        </div>
+                        {appliedDiscount > 0 && (
+                          <div className="flex justify-between text-sm mt-1 text-red-600">
+                            <span>ছাড় (কুপন)</span>
+                            <span>- ৳{appliedDiscount}</span>
                           </div>
-                        ) : (
-                          <div className="text-center py-8 text-gray-400">
-                            <FaShoppingCart className="text-3xl mx-auto mb-2" />
-                            <p>সাইজ ও কালার সিলেক্ট করুন</p>
+                        )}
+                        <div className="flex justify-between text-lg font-black mt-3 pt-2 border-t">
+                          <span>সর্বমোট</span>
+                          <span className="text-red-600">
+                            ৳
+                            {cartData.items.reduce(
+                              (sum: number, ci: any) =>
+                                selectedCartItems.has(ci.variant?.id)
+                                  ? sum +
+                                    (ci.variant?.price || 0) *
+                                      ci.quantity
+                                  : sum,
+                              0,
+                            ) +
+                              (isFreeDelivery ? 0 : deliveryCharge) -
+                              appliedDiscount}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : selectedVariant ? (
+                    <div className="space-y-4">
+                      <div className="flex gap-3">
+                        {selectedVariant.image && (
+                          <img
+                            src={selectedVariant.image}
+                            alt=""
+                            className="w-16 h-16 object-cover rounded-sm border border-gray-100"
+                          />
+                        )}
+                        <div>
+                          <div className="font-bold text-gray-800">
+                            {selectedProduct?.name || data.product?.name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {Object.values(selectedVariantAttrs).join(" / ")}
+                          </div>
+                          <div className="text-lg font-black text-red-600">
+                            ৳{selectedVariant.price}
+                          </div>
+                          {selectedVariant.compareAtPrice && selectedVariant.compareAtPrice > selectedVariant.price && (
+                            <div className="text-xs text-gray-400 line-through">৳{selectedVariant.compareAtPrice}</div>
+                          )}
+                          <div className="text-xs text-gray-500">স্টক: {selectedVariant.stock} · SKU: {selectedVariant.sku}</div>
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>পরিমাণ</span>
+                        <span className="font-bold">{quantity}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>মূল্য</span>
+                        <span className="font-bold">
+                          ৳{(selectedVariant.price * quantity).toFixed(0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>ডেলিভারি চার্জ</span>
+                        <span className="font-bold text-red-600">
+                          {isFreeDelivery ? "ফ্রি" : `৳${deliveryCharge}`}
+                        </span>
+                      </div>
+                      {appliedDiscount > 0 && (
+                        <div className="flex justify-between text-sm text-red-600">
+                          <span>ছাড় (কুপন)</span>
+                          <span>- ৳{appliedDiscount}</span>
+                        </div>
+                      )}
+                      <div className="border-t pt-3 mt-2">
+                        <div className="flex justify-between text-lg font-black">
+                          <span>সর্বমোট</span>
+                          <span className="text-red-600">
+                            ৳{(selectedVariant.price * quantity + (isFreeDelivery ? 0 : deliveryCharge) - appliedDiscount).toFixed(0)}
+                          </span>
+                        </div>
+                        {!isFreeDelivery && (
+                          <div className="text-xs text-center mt-2 text-red-600 bg-white p-2 rounded-sm">
+                            🎁 আজই অর্ডার করুন, ফ্রি ডেলিভারি পান!
                           </div>
                         )}
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-400">
+                      <FaShoppingCart className="text-3xl mx-auto mb-2" />
+                      <p>সাইজ ও কালার সিলেক্ট করুন</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-
-            {!reviewsLoading && (
-              <AnimSection delay={120}>
-                <ReviewsSection
-                  reviews={reviews}
-                  reviewsLoading={reviewsLoading}
-                  avgRating={avgRating}
-                  showReviewForm={showReviewForm}
-                  setShowReviewForm={setShowReviewForm}
-                  editingReviewId={editingReviewId}
-                  reviewName={reviewName}
-                  reviewLocation={reviewLocation}
-                  reviewText={reviewText}
-                  reviewStars={reviewStars}
-                  reviewPhone={reviewPhone}
-                  reviewSubmitting={reviewSubmitting}
-                  setEditingReviewId={setEditingReviewId}
-                  setReviewName={setReviewName}
-                  setReviewLocation={setReviewLocation}
-                  setReviewText={setReviewText}
-                  setReviewStars={setReviewStars}
-                  setReviewPhone={setReviewPhone}
-                  onReviewSubmit={handleReviewSubmit}
-                  onEditReview={handleEditReview}
-                  onDeleteReview={handleDeleteReview}
-                  primary={PRIMARY}
-                />
-              </AnimSection>
-            )}
-
-            {faqs.length > 0 && (
-              <AnimSection delay={140}>
-                <FAQSection
-                  faqs={faqs}
-                  openFaq={openFaq}
-                  setOpenFaq={setOpenFaq}
-                  primary={PRIMARY}
-                />
-              </AnimSection>
-            )}
-
-            <AnimSection delay={180}>
-              <ContactSection
-                displayPhone={displayPhone}
-                displayPhone2={displayPhone2}
-                displayEmail={displayEmail}
-                displayAddress={displayAddress}
-                displaySocialLinks={displaySocialLinks}
-                whatsappNumber={whatsappNumber}
-                primary={PRIMARY}
-              />
-            </AnimSection>
-          </>
-        )}
+          </div>
+        </div>
       </div>
+
+      {/* Reviews */}
+      {!reviewsLoading && (
+        <AnimSection delay={120}>
+          <ReviewsSection
+            reviews={reviews}
+            reviewsLoading={reviewsLoading}
+            avgRating={avgRating}
+            showReviewForm={showReviewForm}
+            setShowReviewForm={setShowReviewForm}
+            editingReviewId={editingReviewId}
+            reviewName={reviewName}
+            reviewLocation={reviewLocation}
+            reviewText={reviewText}
+            reviewStars={reviewStars}
+            reviewPhone={reviewPhone}
+            reviewSubmitting={reviewSubmitting}
+            setEditingReviewId={setEditingReviewId}
+            setReviewName={setReviewName}
+            setReviewLocation={setReviewLocation}
+            setReviewText={setReviewText}
+            setReviewStars={setReviewStars}
+            setReviewPhone={setReviewPhone}
+            onReviewSubmit={handleReviewSubmit}
+            onEditReview={handleEditReview}
+            onDeleteReview={handleDeleteReview}
+            primary={PRIMARY}
+          />
+        </AnimSection>
+      )}
+
+      {/* FAQ */}
+      {faqs.length > 0 && (
+        <AnimSection delay={140}>
+          <FAQSection
+            faqs={faqs}
+            openFaq={openFaq}
+            setOpenFaq={setOpenFaq}
+            primary={PRIMARY}
+          />
+        </AnimSection>
+      )}
+
+      {/* Contact */}
+      <AnimSection delay={180}>
+        <ContactSection
+          displayPhone={displayPhone}
+          displayPhone2={displayPhone2}
+          displayEmail={displayEmail}
+          displayAddress={displayAddress}
+          displaySocialLinks={displaySocialLinks}
+          whatsappNumber={whatsappNumber}
+          primary={PRIMARY}
+        />
+      </AnimSection>
+    </div>
+  )}
+</div>
 
       <StoreFooter
         companyName={companyName}

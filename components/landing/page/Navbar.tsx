@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   FaPhoneAlt,
   FaHeart,
@@ -35,6 +36,78 @@ interface NavbarProps {
   whatsappNumber: string;
   data: { page?: LandingPage; product?: Product; tenant?: Tenant };
 }
+
+/* ---------- Typewriter placeholder ---------- */
+
+const PLACEHOLDER_PHRASES = [
+  "পণ্য খুঁজুন...",
+  "নাম দিয়ে খুঁজুন...",
+  "বৈশিষ্ট্য দিয়ে খুঁজুন...",
+  "দাম দিয়ে খুঁজুন...",
+];
+
+// বাংলা যুক্তাক্ষর/কার-চিহ্ন যেন না ভাঙে, তাই grapheme অনুযায়ী ভাগ করা হয়
+function splitGraphemes(text: string): string[] {
+  if (typeof Intl !== "undefined" && "Segmenter" in Intl) {
+    const seg = new (Intl as any).Segmenter("bn", { granularity: "grapheme" });
+    return Array.from(seg.segment(text), (s: any) => s.segment as string);
+  }
+  return Array.from(text);
+}
+
+function useTypewriterPlaceholder(phrases: string[], enabled: boolean) {
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      setText(phrases[0]);
+      return;
+    }
+
+    const parts = phrases.map(splitGraphemes);
+    let phraseIdx = 0;
+    let charIdx = 0;
+    let deleting = false;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      const chars = parts[phraseIdx];
+
+      if (!deleting) {
+        charIdx++;
+        setText(chars.slice(0, charIdx).join(""));
+        if (charIdx === chars.length) {
+          deleting = true;
+          timer = setTimeout(tick, 1600); // পুরো লেখা একটু থামবে
+          return;
+        }
+        timer = setTimeout(tick, 90);
+      } else {
+        charIdx--;
+        setText(chars.slice(0, charIdx).join(""));
+        if (charIdx === 0) {
+          deleting = false;
+          phraseIdx = (phraseIdx + 1) % parts.length;
+          timer = setTimeout(tick, 400);
+          return;
+        }
+        timer = setTimeout(tick, 45);
+      }
+    };
+
+    timer = setTimeout(tick, 400);
+    return () => clearTimeout(timer);
+  }, [enabled, phrases]);
+
+  return text;
+}
+
+/* ---------- Suggestion list ---------- */
 
 function SuggestionList({
   suggestions,
@@ -87,6 +160,8 @@ function SuggestionList({
   );
 }
 
+/* ---------- Navbar ---------- */
+
 export default function Navbar({
   displayLogo,
   displayPhone,
@@ -115,6 +190,13 @@ export default function Navbar({
     setMobileSearchOpen(false);
   };
 
+  // user লিখতে শুরু করলে animation বন্ধ থাকবে
+  const typedPlaceholder = useTypewriterPlaceholder(
+    PLACEHOLDER_PHRASES,
+    searchQuery.length === 0,
+  );
+  const animatedPlaceholder = typedPlaceholder ? `${typedPlaceholder}|` : "";
+
   const iconBtn =
     "relative grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl border border-[#e7e8ec] bg-white text-[#17181c] transition-all hover:bg-gray-50 active:scale-95 sm:h-11 sm:w-11";
 
@@ -126,7 +208,7 @@ export default function Navbar({
         paddingTop: "env(safe-area-inset-top)",
       }}
     >
-      <div className="mx-auto flex max-w-[1280px] items-center gap-3 px-3 py-2 sm:h-[68px] sm:gap-5 sm:px-5 sm:py-0">
+      <div className="mx-auto flex max-w-[1580px] items-center gap-3 px-3 py-2 sm:h-[76px] sm:gap-5 sm:px-5 sm:py-0 lg:h-[80px]">
         {/* Menu (mobile/tablet) */}
         <button onClick={() => setMobileSidebarOpen(true)} className={`${iconBtn} lg:hidden -ml-1`} aria-label="মেনু খুলুন">
           <FaBars className="text-lg" />
@@ -138,12 +220,13 @@ export default function Navbar({
             <img
               src={displayLogo}
               alt={companyName || "Logo"}
-              className="h-9 w-auto max-w-[130px] object-contain sm:h-11 sm:max-w-[180px] lg:h-12"
+              decoding="async"
+              className="h-10 w-auto max-w-[150px] object-contain sm:h-12 sm:max-w-[200px] lg:h-14 lg:max-w-[240px]"
             />
           ) : (
             <>
               <div
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-base font-bold text-white sm:h-11 sm:w-11 sm:text-lg"
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white sm:h-12 sm:w-12 sm:text-xl"
                 style={{ background: primary }}
               >
                 {companyName?.charAt(0) || "S"}
@@ -170,7 +253,8 @@ export default function Navbar({
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               className="flex-1 bg-transparent px-4 text-sm text-gray-800 outline-none placeholder:text-gray-400"
-              placeholder="পণ্য খুঁজুন (নাম, বৈশিষ্ট্য, দাম)..."
+              placeholder={animatedPlaceholder}
+              aria-label="পণ্য খুঁজুন"
             />
             <button
               className="flex items-center gap-2 px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
@@ -266,7 +350,8 @@ export default function Navbar({
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             className="flex-1 bg-transparent px-4 py-3 text-base text-gray-800 outline-none placeholder:text-gray-400"
-            placeholder="পণ্য খুঁজুন..."
+            placeholder={animatedPlaceholder}
+            aria-label="পণ্য খুঁজুন"
           />
           <button className="px-5 py-3.5 text-white" style={{ background: primary }} aria-label="খুঁজুন">
             <FaSearch className="text-base" />
