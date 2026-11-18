@@ -23,7 +23,7 @@ export default function StoreFooter({ companyName, intro, phone, email, address 
             <ul className="space-y-1.5">
               {phone && <li>ফোন: {phone}</li>}
               {email && <li>ইমেইল: {email}</li>}
-              {address && <li>ঠিকানা: {address}</li>}
+              {/* {address && <li>ঠিকানা: {address}</li>} */}
             </ul>
           </div>
           <div>
