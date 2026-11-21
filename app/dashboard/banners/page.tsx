@@ -6,6 +6,7 @@ import { showToast } from "@/lib/toast";
 import api from "@/lib/api";
 import { Banner } from "@/types";
 import { FiImage, FiEdit, FiTrash2 } from "react-icons/fi";
+import ImageUpload from "@/components/ui/ImageUpload";
 
 interface Category {
   id: string;
@@ -30,8 +31,9 @@ export default function BannerManagement() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<BannerFormData>({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<BannerFormData>({
     defaultValues: {
+      imageUrl: "",
       isActive: true,
       sortOrder: 0,
     }
@@ -208,12 +210,18 @@ export default function BannerManagement() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Image URL *
+                    Banner Image *
                   </label>
+                  <ImageUpload
+                    value={watch("imageUrl")}
+                    onChange={(value) => setValue("imageUrl", value as string)}
+                    folder="ecom/banners"
+                    label="Upload Banner Image"
+                    accept="image/*"
+                  />
                   <input
-                    {...register("imageUrl", { required: "Image URL is required" })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder="https://example.com/banner.jpg"
+                    type="hidden"
+                    {...register("imageUrl", { required: "Banner image is required" })}
                   />
                   {errors.imageUrl && (
                     <p className="text-red-500 text-xs mt-1">{errors.imageUrl.message}</p>

@@ -33,10 +33,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // Don't redirect on auth endpoints (register, verify, resend-otp)
-    const authEndpoints = ['/auth/register', '/auth/verify', '/auth/resend-otp'];
-    const isAuthEndpoint = error.config?.url && authEndpoints.some(e => error.config.url.includes(e));
+    // Also don't redirect on branches - some users may not have branch access but token is valid
+    const excludedEndpoints = ['/auth/register', '/auth/verify', '/auth/resend-otp', '/branches'];
+    const isExcludedEndpoint = error.config?.url && excludedEndpoints.some(e => error.config.url.includes(e));
     
-    if (error.response?.status === 401 && !isAuthEndpoint) {
+    if (error.response?.status === 401 && !isExcludedEndpoint) {
       // Unauthorized - clear token and redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -44,7 +45,7 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         window.location.href = '/auth/login';
       }
-    } else if (error.response?.status === 403 && !isAuthEndpoint) {
+    } else if (error.response?.status === 403 && !isExcludedEndpoint) {
       // Forbidden - token may be invalid or insufficient permissions; clear session and redirect
       localStorage.removeItem('token');
       localStorage.removeItem('user');

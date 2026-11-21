@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import { showToast } from '@/lib/toast';
 import { Variant, Supplier } from '@/types';
 import { FiPlus, FiEdit2, FiTrash2, FiRefreshCw, FiMove } from 'react-icons/fi';
+import ImageUpload from '@/components/ui/ImageUpload';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AttributeTemplate {
@@ -71,7 +72,7 @@ export default function VariantsPage() {
   // Color-wise image URLs
   const [colorImageUrls, setColorImageUrls] = useState<Record<string, string>>({});
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<VariantFormData>();
+  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<VariantFormData>();
 
   const fetchVariants = async (productId = selectedProductId) => {
     if (!productId) {
@@ -589,8 +590,16 @@ export default function VariantsPage() {
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('variants.image')}</label>
-                <input {...register('image')}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="https://example.com/image.jpg" />
+                <ImageUpload
+                  value={watch('image')}
+                  onChange={(value: string | string[]) => { setValue('image', value as string); }}
+                  multiple={false}
+                  folder="ecom/products"
+                  label={t('variants.image')}
+                  accept="image/*"
+                  maxFiles={1}
+                  className="p-0"
+                />
               </div>
             </div>
              <div>

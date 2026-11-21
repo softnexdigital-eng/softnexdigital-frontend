@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import { showToast } from '@/lib/toast';
 import { FiSave, FiArrowLeft, FiPlus, FiEdit2, FiTrash2, FiX, FiRefreshCw, FiDollarSign, FiGrid, FiCheck, FiMinus, FiPlus as FiPlusIcon, FiCopy, FiChevronDown } from 'react-icons/fi';
 import { Product, Variant } from '@/types';
+import ImageUpload from '@/components/ui/ImageUpload';
 
 interface AttributeTemplate {
   id: string;
@@ -483,8 +484,14 @@ export default function ProductDetailPage() {
                   <input type="number" value={vStock} onChange={(e) => setVStock(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-sm outline-none text-sm" placeholder="0" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Variant Image URL</label>
-                  <input type="text" value={vImage} onChange={(e) => setVImage(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-sm outline-none text-sm" placeholder="https://example.com/image.jpg" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Variant Image</label>
+                  <ImageUpload
+                    value={vImage}
+                    onChange={(v) => setVImage(typeof v === 'string' ? v : (v[0] || ''))}
+                    folder="ecom/variants"
+                    label="Upload Variant Image"
+                    accept="image/*"
+                  />
                 </div>
               </div>
 

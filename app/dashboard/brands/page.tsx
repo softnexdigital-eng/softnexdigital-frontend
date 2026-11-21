@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import api from '@/lib/api';
 import { showToast } from '@/lib/toast';
 import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
+import ImageUpload from '@/components/ui/ImageUpload';
 
 interface Brand {
   id: string;
@@ -142,9 +143,15 @@ export default function BrandsPage() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
-                <input {...register('logo')}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Logo Image</label>
+                <ImageUpload
+                  value={watch('logo') || ''}
+                  onChange={(v) => setValue('logo', typeof v === 'string' ? v : (v[0] || ''))}
+                  folder="ecom/brands"
+                  label="Upload Logo"
+                  accept="image/*"
+                />
+                <input type="hidden" {...register('logo')} />
               </div>
               <div className="flex items-center gap-3 pt-6">
                 <input {...register('isActive')} type="checkbox" id="isActive"

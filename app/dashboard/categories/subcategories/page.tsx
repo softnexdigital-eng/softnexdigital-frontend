@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import api from '@/lib/api';
 import { showToast } from '@/lib/toast';
+import ImageUpload from '@/components/ui/ImageUpload';
 import {
   FiEdit2, FiTrash2, FiPlus, FiLayers, FiSearch, FiImage,
   FiType, FiHash, FiCheck, FiX, FiChevronUp, FiChevronDown,
@@ -407,25 +408,16 @@ export default function SubCategoriesPage() {
                     <div>
                       <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                         <FiImage className="w-4 h-4 text-gray-400" />
-                        Image URL
+                        Category Image
                       </label>
-                      <input
-                        {...register('image')}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-purple-500 outline-none text-sm bg-white"
-                        placeholder="https://example.com/image.jpg"
+                      <ImageUpload
+                        value={watchedImage || ''}
+                        onChange={(v) => setValue('image', typeof v === 'string' ? v : (v[0] || ''))}
+                        folder="ecom/categories"
+                        label="Upload Category Image"
+                        accept="image/*"
                       />
-                      {watchedImage && (
-                        <div className="mt-2 w-20 h-20 rounded-sm overflow-hidden border border-gray-200 bg-white">
-                          <img
-                            src={watchedImage}
-                            alt="Preview"
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
+                      <input type="hidden" {...register('image')} />
                     </div>
 
                     {/* Description */}

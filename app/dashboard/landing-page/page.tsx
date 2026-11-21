@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import { showToast } from '@/lib/toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { FiSave, FiEye, FiGlobe, FiImage, FiPhone, FiMail, FiMapPin, FiLink, FiLock, FiShoppingBag, FiCheckCircle, FiClock, FiLayout } from 'react-icons/fi';
+import ImageUpload from '@/components/ui/ImageUpload';
 
 interface LandingPageData {
   id: string;
@@ -489,10 +490,14 @@ export default function LandingPageBuilder() {
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4"><FiImage className="inline mr-2" />Logo Upload</h2>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Logo Image URL</label>
-          <input type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            placeholder="https://example.com/logo.png" />
+          <label className="block text-sm font-medium text-gray-700 mb-2">Logo Image</label>
+          <ImageUpload
+            value={logoUrl || ''}
+            onChange={(v) => setLogoUrl(typeof v === 'string' ? v : (v[0] || ''))}
+            folder="ecom/logos"
+            label="Upload Logo"
+            accept="image/*"
+          />
           {logoUrl && (
             <div className="mt-3 p-3 border rounded-lg bg-gray-50">
               <img src={logoUrl} alt="Logo preview" className="h-16 object-contain"

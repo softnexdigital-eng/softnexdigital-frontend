@@ -561,3 +561,4 @@ input:focus, select:focus, textarea:focus {
 [type="checkbox"]:focus, [type="radio"]:focus {
   --tw-ring-color: var(--brand-600) !important;
 }
+

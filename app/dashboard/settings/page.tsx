@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import api from '@/lib/api';
 import { showToast } from '@/lib/toast';
 import { useTheme } from '@/contexts/ThemeContext';
+import ImageUpload from '@/components/ui/ImageUpload';
 import { FiSave, FiRefreshCcw, FiDroplet, FiShoppingBag, FiGlobe, FiLink, FiFileText, FiSettings, FiTag, FiLock, FiKey, FiTruck } from 'react-icons/fi';
 
 type SettingsFormData = {
@@ -72,7 +73,7 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<SettingsFormData>();
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<SettingsFormData>();
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -326,9 +327,16 @@ export default function SettingsPage() {
                 <textarea {...register('address')} rows={2} className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none" placeholder="দোকানের ঠিকানা" />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">লোগো (URL)</label>
-                <input {...register('logo')} className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="https://example.com/logo.png" />
-                <p className="text-xs text-gray-400 mt-1.5">লোগোর সরাসরি ইমেজ URL দিন</p>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">লোগো</label>
+                <ImageUpload
+                  value={watch('logo') || ''}
+                  onChange={(v) => setValue('logo', typeof v === 'string' ? v : (v[0] || ''))}
+                  folder="ecom/logos"
+                  label="লোগো আপলোড করুন"
+                  accept="image/*"
+                />
+                <input type="hidden" {...register('logo')} />
+                <p className="text-xs text-gray-400 mt-1.5">লোগো ইমেজ আপলোড করুন</p>
               </div>
             </div>
           </div>
@@ -446,8 +454,15 @@ export default function SettingsPage() {
                 <input {...register('companyName')} className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="আমার কোম্পানি" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">লোগো URL</label>
-                <input {...register('logo')} className="w-full px-4 py-2.5 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="https://..." />
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">লোগো</label>
+                <ImageUpload
+                  value={watch('logo') || ''}
+                  onChange={(v) => setValue('logo', typeof v === 'string' ? v : (v[0] || ''))}
+                  folder="ecom/logos"
+                  label="লোগো আপলোড করুন"
+                  accept="image/*"
+                />
+                <input type="hidden" {...register('logo')} />
               </div>
             </div>
           </div>

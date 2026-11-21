@@ -1782,7 +1782,7 @@ export default function PublicLandingPage() {
     <div
       style={{
         fontFamily: "'Hind Siliguri','Noto Sans Bengali',sans-serif",
-        background: "#fdfffc",
+        background: "#FAF7F2 ",
         minHeight: "100vh",
       }}
       className="rounded-sm"

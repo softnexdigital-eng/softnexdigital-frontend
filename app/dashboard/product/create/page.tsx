@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { showToast } from '@/lib/toast';
-import { FiX, FiPlus, FiSave, FiArrowRight, FiImage, FiChevronDown, FiTrash2, FiFolder } from 'react-icons/fi';
+import ImageUpload from '@/components/ui/ImageUpload';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { FiFolder, FiX, FiChevronDown, FiSave } from 'react-icons/fi';
 
 interface Brand {
   id: string;
@@ -32,7 +33,6 @@ export default function CreateProductPage() {
   const [brandId, setBrandId] = useState('');
   const [selectedCatIds, setSelectedCatIds] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [imageInput, setImageInput] = useState('');
 
   // SEO fields
   const [metaTitle, setMetaTitle] = useState('');
@@ -63,28 +63,12 @@ export default function CreateProductPage() {
   }, []);
 
   const toggleCategory = (catId: string) => {
-    setSelectedCatIds(prev =>
-      prev.includes(catId) ? prev.filter(id => id !== catId) : [...prev, catId]
+    setSelectedCatIds((prev) =>
+      prev.includes(catId) ? prev.filter((id) => id !== catId) : [...prev, catId]
     );
   };
 
-  const addImage = () => {
-    const url = imageInput.trim();
-    if (!url) return;
-    if (imageUrls.includes(url)) {
-      showToast.error('Image already added');
-      return;
-    }
-    setImageUrls(prev => [...prev, url]);
-    setImageInput('');
-  };
-
-  const removeImage = (url: string) => {
-    setImageUrls(prev => prev.filter(u => u !== url));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     if (!name.trim()) {
       showToast.error('Product name is required');
       return;
@@ -234,41 +218,16 @@ export default function CreateProductPage() {
           {/* Images */}
           <div className="mt-5">
             <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
-            <p className="text-xs text-gray-400 mb-3">Add image URLs (first one will be the primary/cover image)</p>
-            <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={imageInput}
-                onChange={(e) => setImageInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addImage())}
-                className="flex-1 px-5 py-3 border border-gray-200 rounded-sm focus:ring-2 focus:ring-blue-500 outline-none text-base"
-                placeholder="https://example.com/image.jpg"
-              />
-              <button
-                type="button"
-                onClick={addImage}
-                className="px-5 py-3 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-all text-sm font-medium"
-              >
-                <FiPlus className="w-5 h-5" /> Add Image
-              </button>
-            </div>
-            {imageUrls.length > 0 && (
-              <div className="flex flex-wrap gap-3">
-                {imageUrls.map((url, idx) => (
-                  <div key={idx} className="relative group w-20 h-20 rounded-sm overflow-hidden border border-gray-200">
-                    <img src={url} alt={`Product ${idx + 1}`} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(url)}
-                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <FiTrash2 className="w-3 h-3" />
-                    </button>
-                    {idx === 0 && <span className="absolute bottom-1 left-1 bg-blue-600 text-white text-[8px] px-1 rounded">Primary</span>}
-                  </div>
-                ))}
-              </div>
-            )}
+            <p className="text-xs text-gray-400 mb-3">Add images (first one will be the primary/cover image)</p>
+            <ImageUpload
+              value={imageUrls}
+              onChange={(value) => setImageUrls(Array.isArray(value) ? value : [value])}
+              multiple
+              folder="ecom/products"
+              label="Upload Product Images"
+              accept="image/*"
+              maxFiles={10}
+            />
           </div>
         </div>
 
