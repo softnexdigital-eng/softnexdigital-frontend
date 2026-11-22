@@ -10,7 +10,7 @@
 ✓ Ready in 33.3s
 ⨯ Another next dev server is already running.
 
-- Local:        http://localhost:5000
+- Local:        https://softnexdigital-backend.vercel.app
 - PID:          2164
 - Dir:          E:\my local git\multitenant-saas-backend\frontend
 - Log:          .next\dev\logs\next-development.log
