@@ -230,7 +230,10 @@ export default function PublicLandingPage() {
   } | null>(null);
   const [orderLoading, setOrderLoading] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [currentTheme] = useState<string>("original");
+  const currentTheme = useMemo(
+    () => (data?.page as any)?.landingTheme || (data?.tenant as any)?.landingTheme || "original",
+    [data]
+  );
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [activeGallery, setActiveGallery] = useState(0);
   const [currentColor, setCurrentColor] = useState<string | null>(null);
@@ -1952,6 +1955,7 @@ export default function PublicLandingPage() {
             activeFiltersCount={activeFiltersCount}
             clearFilters={clearFilters}
             primary={PRIMARY}
+            theme={currentTheme}
           />
         </AnimSection>
       </div>
@@ -1970,6 +1974,7 @@ export default function PublicLandingPage() {
             }}
             toggleWishlist={toggleWishlist}
             primary={PRIMARY}
+            theme={currentTheme}
           />
         </AnimSection>
 

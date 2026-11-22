@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import type { Product } from "@/types";
-import ProductCard from "@/components/ProductCard";
+import ThemedProductCard from "@/components/landing/page/ThemedProductCard";
 
 interface AllProductsProps {
   products: Product[];
@@ -11,6 +11,7 @@ interface AllProductsProps {
   onOpenDetails: (productId: string, variantId: string) => void;
   toggleWishlist: (id: string) => void;
   primary?: string;
+  theme?: string;
 }
 
 export default function AllProducts({
@@ -20,6 +21,7 @@ export default function AllProducts({
   onOpenDetails,
   toggleWishlist,
   primary,
+  theme = "original",
 }: AllProductsProps) {
   const visibleProducts = useMemo(
     () => (products || []).filter((p) => Array.isArray(p.variants) && p.variants.length > 0),
@@ -39,7 +41,8 @@ export default function AllProducts({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-3.5">
         {visibleProducts.map((p) => (
           <div key={p.id} className="h-full">
-            <ProductCard
+            <ThemedProductCard
+              theme={theme}
               product={p as any}
               onAddToCart={(variantId, qty, attrs) => addToCart(variantId, qty ?? 1, attrs)}
               onBuyNow={(variantId) => onOpenDetails(p.id, variantId)}

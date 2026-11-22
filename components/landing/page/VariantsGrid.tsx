@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Variant, Product } from "@/types";
-import ProductCard from "@/components/ProductCard";
+import ThemedProductCard from "@/components/landing/page/ThemedProductCard";
 import { FaSearch, FaThLarge, FaList } from "react-icons/fa";
 import type { PublicProduct, PublicVariant } from "@/lib/variants";
 
@@ -18,6 +18,7 @@ interface VariantsGridProps {
   activeFiltersCount: number;
   clearFilters: () => void;
   primary: string;
+  theme?: string;
 }
 
 export default function VariantsGrid({
@@ -32,6 +33,7 @@ export default function VariantsGrid({
   activeFiltersCount,
   clearFilters,
   primary,
+  theme = "original",
 }: VariantsGridProps) {
   const [manualView, setManualView] = useState<"list" | "grid" | null>(null);
   const useGridView = manualView !== "list";
@@ -122,7 +124,8 @@ export default function VariantsGrid({
               key={p.id}
               className={useGridView ? "w-[64%] shrink-0 snap-start sm:w-auto sm:shrink sm:snap-align-none" : "w-full"}
             >
-              <ProductCard
+              <ThemedProductCard
+                theme={theme}
                 product={toCardProduct(p)}
                 onAddToCart={(variantId, qty, attrs) => addToCart(variantId, qty ?? 1, attrs)}
                 onBuyNow={(variantId) => onOpenDetails(p.id, variantId)}

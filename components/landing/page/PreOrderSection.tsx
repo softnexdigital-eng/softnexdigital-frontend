@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Product, Variant } from "@/types";
 import { normalizeAttributes } from "@/lib/variants";
-import ProductCard from "@/components/ProductCard";
+import ThemedProductCard from "@/components/landing/page/ThemedProductCard";
 
 interface PreOrderSectionProps {
   products: Product[];
@@ -12,6 +12,7 @@ interface PreOrderSectionProps {
   onOpenDetails: (productId: string, variantId: string) => void;
   toggleWishlist: (id: string) => void;
   primary: string;
+  theme?: string;
 }
 
 const isPreVariant = (v: Variant) =>
@@ -295,6 +296,7 @@ export default function PreOrderSection({
   onOpenDetails,
   toggleWishlist,
   primary,
+  theme = "original",
 }: PreOrderSectionProps) {
   const preOrderProducts = useMemo(
     () =>
@@ -329,7 +331,8 @@ export default function PreOrderSection({
             className="h-full animate-[fadeUp_0.5s_ease-out_both]"
             style={{ animationDelay: `${i * 60}ms` }}
           >
-            <ProductCard
+            <ThemedProductCard
+              theme={theme}
               product={p as any}
               onAddToCart={(variantId, qty, attrs) =>
                 addToCart(variantId, qty ?? 1, attrs)
